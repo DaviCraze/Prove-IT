@@ -14,6 +14,7 @@ altura_Opc = 50
 
 x_Hist = largura/2 - largura_Opc/2
 y_Hist = altura/2
+hewhewhew = 0
 
 x_Arcd = largura/2 - largura_Opc/2
 y_Arcd = altura/1.5
