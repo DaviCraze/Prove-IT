@@ -6,21 +6,55 @@ import os
 
 pygame.init()
 
-x_Pers = 50
-y_Pers = 600
+x_Pers = 100
+y_Pers = 500
 #musica_fundo = pygame.mixer.music.load("Musicas/12 - Sunken Depths.mp3")
 #pygame.mixer.music.play(-1)
 class Sprite(pygame.sprite.Sprite):
     def __init__(self):
+        global x_Pers, y_Pers
         pygame.sprite.Sprite.__init__(self)
         self.sprites = []
-        self.sprites.append(pygame.image.load('doux.png'))
+        self.sprites_andando = []
+        self.sprites.append(pygame.image.load('Sprites/personagem_idle1.png'))
+        self.sprites.append(pygame.image.load('Sprites/personagem_idle2.png'))
+        self.sprites.append(pygame.image.load('Sprites/personagem_idle3.png'))
+        self.sprites.append(pygame.image.load('Sprites/personagem_idle4.png'))
+        self.sprites_andando.append(pygame.image.load('Sprites/personagem_andando1.png'))
+        self.sprites_andando.append(pygame.image.load('Sprites/personagem_andando2.png'))
+        self.sprites_andando.append(pygame.image.load('Sprites/personagem_andando3.png'))
+        self.sprites_andando.append(pygame.image.load('Sprites/personagem_andando4.png'))
         self.atual = 0
+
         self.image = self.sprites[self.atual]
-        self.image = pygame.transform.smoothscale(self.image, (576*2, 24*2))
+        self.image = pygame.transform.scale(self.image, (32*4, 32*4))
         self.rect = self.image.get_rect()
-        self.rect.topleft = x_Pers, y_Pers
+        self.rect.topleft = (x_Pers, 550)
+
+        self.animar = False
+        self.velocidade = 5
+
+    def andar(self):
+        self.animar = True
+    
+    def update(self, teclas):
+        global x_Pers, y_Pers
+        self.atual += 0.02
+        if self.atual >= len(self.sprites):
+            self.atual = 0
+        self.image = self.sprites[int(self.atual)]
+        self.image = pygame.transform.scale(self.image, (32*4, 32*4))
+
+        if teclas[pygame.K_a]:
+            self.rect.x -= self.velocidade
+            if x_Pers < 0:
+                x_Pers = 0
+        if teclas[pygame.K_d]:
+            self.rect.x += self.velocidade
+            if x_Pers + self.rect.width > largura:
+                x_Pers = largura - self.rect.width
         
+        self.rect.topleft = (x_Pers, 550)
 
 todas_as_sprites = pygame.sprite.Group()
 personagem = Sprite()
@@ -149,8 +183,7 @@ def gerar_jogo(r1, g1, b1, r2, g2, b2, port_1, port_2, port_3, respostas):
     pygame.draw.rect(tela, (255, 255, 255), (pos_port3_x + 13, 407, largura_textF2 + 25, 240))
 
     todas_as_sprites.draw(tela)
-    todas_as_sprites.update()
-
+    todas_as_sprites.update(teclas)
     #pygame.draw.rect(tela, (0, 0, 0), (x_Pers, y_Pers, 50, 50))
     tela.blit(respostas[0][0], (port_1 + 20, 420)) 
     tela.blit(respostas[1][0], (port_2 + 20, 420))
@@ -199,8 +232,6 @@ x = 0
 largura = 1280
 altura = 720
 
-
-
 largura_Opc = 250
 altura_Opc = 50
 
@@ -243,13 +274,13 @@ while True:
             pygame.QUIT()
             sys.exit()
         if teclas[pygame.K_a]:
-            x_Pers -= 15
+            x_Pers -= 10
             if x_Pers < 0:
                 x_Pers = 0
         if teclas[pygame.K_d]:
-            x_Pers += 15
-            if x_Pers + 50 > largura:
-                x_Pers = largura - 50
+            x_Pers += 10
+            if x_Pers + personagem.rect.width > largura:
+                x_Pers = largura - personagem.rect.width
         if evento.type == pygame.MOUSEBUTTONDOWN:
             if evento.button == 1:
                 mouse_x, mouse_y = evento.pos
