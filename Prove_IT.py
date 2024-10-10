@@ -3,16 +3,11 @@ import sys
 import random
 import os
 
-
 pygame.init()
-
-x_Pers = 100
-y_Pers = 500
 #musica_fundo = pygame.mixer.music.load("Musicas/12 - Sunken Depths.mp3")
 #pygame.mixer.music.play(-1)
 class Sprite(pygame.sprite.Sprite):
     def __init__(self):
-        global x_Pers, y_Pers
         pygame.sprite.Sprite.__init__(self)
         self.sprites = []
         self.sprites_andando = []
@@ -29,32 +24,48 @@ class Sprite(pygame.sprite.Sprite):
         self.image = self.sprites[self.atual]
         self.image = pygame.transform.scale(self.image, (32*4, 32*4))
         self.rect = self.image.get_rect()
-        self.rect.topleft = (x_Pers, 550)
+        self.rect.topleft = (100, 550)
 
-        self.animar = False
+        self.andando = False
         self.velocidade = 5
-
-    def andar(self):
-        self.animar = True
+        self.direção = 'direita'
     
     def update(self, teclas):
-        global x_Pers, y_Pers
-        self.atual += 0.02
-        if self.atual >= len(self.sprites):
-            self.atual = 0
-        self.image = self.sprites[int(self.atual)]
+        if teclas[pygame.K_a] or teclas[pygame.K_d]:
+            self.andando = True
+        else:
+            self.andando = False
+
+        if self.andando:
+            self.atual += 0.10
+            if self.atual >= len(self.sprites_andando):
+                self.atual = 0
+            self.image = self.sprites_andando[int(self.atual)]
+        else:
+            self.atual += 0.03
+            if self.atual >= len(self.sprites):
+                self.atual = 0
+            self.image = self.sprites[int(self.atual)]
+
         self.image = pygame.transform.scale(self.image, (32*4, 32*4))
 
         if teclas[pygame.K_a]:
             self.rect.x -= self.velocidade
-            if x_Pers < 0:
-                x_Pers = 0
+            if self.rect.x < 0:
+                self.rect.x = 0
+            self.direção = 'esquerda'
+
         if teclas[pygame.K_d]:
             self.rect.x += self.velocidade
-            if x_Pers + self.rect.width > largura:
-                x_Pers = largura - self.rect.width
+            if self.rect.x + self.rect.width > largura:
+                self.rect.x = largura - self.rect.width
+            self.direção = 'direita'
         
-        self.rect.topleft = (x_Pers, 550)
+        if self.direção == 'esquerda':
+            self.image = pygame.transform.flip(self.image, True, False)
+        else:
+            self.image = pygame.transform.scale(self.image, (32*4, 32*4))
+            
 
 todas_as_sprites = pygame.sprite.Group()
 personagem = Sprite()
@@ -218,8 +229,26 @@ def tela_perdeu():
     tela.blit(text_perder, (largura/1.92 - 140, 210))
     tela.blit(text_inicial, (largura/1.92 + 50, 360))
     tela.blit(text_reiniciar, (largura/1.92 - 250, 360))
-    return largura_inicial, altura_inicial, largura_reiniciar, altura_reiniciar, botao_inicial, botao_reiniciar
+    return botao_inicial, botao_reiniciar,
 
+def Tela_Ganhou():
+    tela.blit(background, (0, 0))
+    ganhou = f'Parabens! Você concluiu o Modo Historia!'
+    tela_inicial = f'Tela Inicial'
+    text_ganhou = fonte_Opc.render(ganhou, True, (0, 0, 0))
+    text_inicial = fonte_Opc.render(tela_inicial, True, (0, 0, 0))
+    largura_ganhou, altura_ganhou = text_ganhou.get_size()
+    largura_inicial, altura_inicial = text_inicial.get_size()
+    pygame.draw.rect(tela, (0, 0, 0), (largura/3 - 140, 200, largura_ganhou + 50, altura_ganhou + 20))
+    pygame.draw.rect(tela, (255, 255, 255), (largura/2.93 - 140, 210, largura_ganhou + 25, altura_ganhou))
+    botao_inicial = pygame.draw.rect(tela, (0, 0, 0), (largura/2, 350, largura_inicial + 50, altura_inicial + 20))
+    pygame.draw.rect(tela, (255, 255, 255), (largura/1.96, 360, largura_inicial + 25, altura_inicial))
+
+    tela.blit(text_inicial, (largura/1.92, 360))
+    tela.blit(text_ganhou, (largura/2.88 - 140, 210))
+
+    return botao_inicial
+    
 def pontuação_respostas(escolher):
     if escolher == 'Linear':
         return 2
@@ -273,14 +302,7 @@ while True:
             salvar_pontuação(pontuação)
             pygame.QUIT()
             sys.exit()
-        if teclas[pygame.K_a]:
-            x_Pers -= 10
-            if x_Pers < 0:
-                x_Pers = 0
-        if teclas[pygame.K_d]:
-            x_Pers += 10
-            if x_Pers + personagem.rect.width > largura:
-                x_Pers = largura - personagem.rect.width
+
         if evento.type == pygame.MOUSEBUTTONDOWN:
             if evento.button == 1:
                 mouse_x, mouse_y = evento.pos
@@ -293,8 +315,8 @@ while True:
     if Tela_Loading:
         if num_Sala <= 100 and Vida > 0:
             if not questão_gerada or not Reiniciou:
-                x_Pers = 50
-                y_Pers = 600
+                personagem.rect.x = 50
+                personagem.rect.y = 550
                 questão, resposta, respostaf1, respostaf2, escolher = gerar_questao()
                 largura_quest, largura_text, largura_textF1, largura_textF2, text_quest, text_resV, text_resF1, text_resF2 = gerar_texto(questão, resposta, respostaf1, respostaf2)
                 r1, g1, b1 = random.randint(0,255), random.randint(0,255), random.randint(0,255)
@@ -305,12 +327,15 @@ while True:
             
             gerar_jogo(r1, g1, b1, r2, g2, b2, port_1, port_2, port_3, respostas)
             ponto_texto = f'Pontos = {pontuação}'
+            vida_texto = f'Vida = {Vida}'
             ponto_fonte = fonte_Opc.render(ponto_texto, True, (0, 0, 0))
-            tela.blit(ponto_fonte, (50, 100))
+            vida_fonte = fonte_Opc.render(vida_texto, True, (0, 0, 0))
+            tela.blit(ponto_fonte, (50, 50))
+            tela.blit(vida_fonte, (50, 100))
+            
             if evento.type == pygame.KEYDOWN and evento.key == pygame.K_RETURN:
-                pygame.event.get(x_Pers, y_Pers)
-                
-                resultado = verificar_escolha(port_1, pos_port_y, largura_text, respostas[0], x_Pers, y_Pers)
+                pygame.event.get(personagem.rect.x, personagem.rect.y)
+                resultado = verificar_escolha(port_1, pos_port_y, largura_text, respostas[0], personagem.rect.x, personagem.rect.y)
                 if resultado == "avançar":
                     num_Sala += 1
                     questão_gerada = False
@@ -321,7 +346,7 @@ while True:
                     num_Sala += 1
                     Vida -= 1
                     questão_gerada = False
-                resultado = verificar_escolha(port_2, pos_port_y, largura_textF1, respostas[1], x_Pers, y_Pers)
+                resultado = verificar_escolha(port_2, pos_port_y, largura_textF1, respostas[1], personagem.rect.x, personagem.rect.y)
                 if resultado == "avançar":
                     num_Sala += 1
                     questão_gerada = False
@@ -332,7 +357,7 @@ while True:
                     num_Sala += 1
                     Vida -= 1
                     questão_gerada = False
-                resultado = verificar_escolha(port_3, pos_port_y, largura_textF2, respostas[2], x_Pers, y_Pers)
+                resultado = verificar_escolha(port_3, pos_port_y, largura_textF2, respostas[2], personagem.rect.x, personagem.rect.y)
                 if resultado == "avançar":
                     num_Sala += 1
                     questão_gerada = False
@@ -343,12 +368,21 @@ while True:
                     num_Sala += 1
                     Vida -= 1
                     questão_gerada = False
+
+        elif num_Sala == 101 and Vida > 0:
+            botao_inicial = Tela_Ganhou()
+            if evento.type == pygame.MOUSEBUTTONDOWN:
+                if evento.button == 1:
+                    mouse_x, mouse_y = evento.pos
+                    if botao_inicial.collidepoint(evento.pos):
+                        Tela_Menu = not Tela_Menu
+                        Tela_Loading = not Tela_Loading
         elif Vida == 0:
             Tela_Perdeu = not Tela_Perdeu
             Tela_Loading = not Tela_Loading
-
+        
     if Tela_Perdeu:
-        largura_inicial, altura_inicial, largura_reiniciar, altura_reiniciar, botao_inicial, botao_reiniciar = tela_perdeu()
+        botao_inicial, botao_reiniciar = tela_perdeu()
         if evento.type == pygame.MOUSEBUTTONDOWN:
             if evento.button == 1:
                 mouse_x, mouse_y = evento.pos
