@@ -1,23 +1,24 @@
 import os
 import random
+import json
 
 class Utilitario:
     
     @staticmethod
-    def carregar_pontuação(Arquivo):
+    def carregar_dados(Arquivo):
         if os.path.exists(Arquivo):
             with open(Arquivo, "r") as f:
                 try:
-                    return int(f.read())
+                    return json.load(f)
                 except ValueError:
-                    return -1
+                    return {"pontuação": 0, "itens": {}}
         else: 
-            return -1
+            return {"pontuação": 0, "itens": {}}
     
     @staticmethod
-    def salvar_pontuação(pontuação, Arquivo):
+    def salvar_dados(dados, Arquivo):
         with open(Arquivo, "w") as f:
-            f.write(str(pontuação))
+            json.dump(dados, f, indent=4)
     
     @staticmethod
     def var_aleatoria(quant, menor, topo):
@@ -43,7 +44,9 @@ class Utilitario:
         return 0
     
     @staticmethod
-    def Quest_Linear():
+    def Quest_Linear(fonte_dados):
+        dica = f'Faça primeiro a multiplicação, depois a subtração'
+        dica_t = fonte_dados.render(dica, True, (0,0,0))
         a, b = Utilitario.var_aleatoria(2,0,9)
         questão = f'2 x {a} - {b} = 0'
         resposta = f'x = {(2*a) - b}'
@@ -57,10 +60,12 @@ class Utilitario:
         while respostaf2 == respostaf1 or respostaf2 == resposta:
             e, f = Utilitario.var_aleatoria(2,0,9)
             respostaf2 = f'x = {(2 * e) - f}'
-        return questão, resposta, respostaf1, respostaf2
+        return questão, resposta, respostaf1, respostaf2, dica_t
     
     @staticmethod
-    def Quest_Divisao():
+    def Quest_Divisao(fonte_dados):
+        dica = f'Amigo....so dividir(qualquer coisa chuta ou usa calculadora ;)'
+        dica_t = fonte_dados.render(dica, True, (0,0,0))
         a = Utilitario.var_aleatoria(1,10,100)
         b = Utilitario.var_aleatoria(1,1,10)
         questão = f'{a} / {b} = x'
@@ -79,10 +84,12 @@ class Utilitario:
             e = Utilitario.var_aleatoria(1,1,100)
             f = Utilitario.var_aleatoria(1,1,10)
             respostaf2 = f'x = {e / f:.2f}'
-        return questão, resposta, respostaf1, respostaf2
+        return questão, resposta, respostaf1, respostaf2, dica_t
     
     @staticmethod
-    def Quest_Quadratica():
+    def Quest_Quadratica(fonte_dados):
+        dica = f"Que tal focar no primeiro valor e no segundo valor? Talvez isso te ajude!"
+        dica_t = fonte_dados.render(dica, True, (0,0,0))
         a,b = Utilitario.var_aleatoria(2,1,9)
         questão = f'{a ** 2}x² + {2 * a * b}x + {b ** 2}'
         resposta = f'({a}x + {b})²'
@@ -96,7 +103,7 @@ class Utilitario:
         while respostaf2 == resposta or respostaf2 == respostaf1:
             e, f = Utilitario.var_aleatoria(2,1,9)
             respostaf2 = f'({e}x + {f})²'
-        return questão, resposta, respostaf1, respostaf2
+        return questão, resposta, respostaf1, respostaf2, dica_t
     
     @staticmethod
     def Quest_Comparacao():
@@ -128,10 +135,21 @@ class Utilitario:
     
     @staticmethod
     def verificar_escolha(porta_x, porta_y, largura_porta, respostas, jogador_x, jogador_y):
-        if porta_x <= jogador_x <= porta_x + largura_porta and porta_y <= jogador_y <= porta_y + 250:
+        if porta_x - 50 <= jogador_x <= porta_x + largura_porta + 50 and porta_y <= jogador_y <= porta_y + 250:
             if respostas[1] == "correta":
                 return "avançar"
             else:
                 return "perdeu"
         return -1
           
+    @staticmethod
+    def efeito_booster(num_sala):
+        num_sala += 1
+        return num_sala
+    
+    @staticmethod
+    def efeito_vida(vida):
+        vida += 1
+        return vida
+        
+        
