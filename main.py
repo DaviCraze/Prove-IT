@@ -2,10 +2,9 @@ import pygame
 import sys
 from Geratriz import *
 from Utilitario import *
-
+import time
 
 pygame.init()
-
 
 arquivo_pontuação = "Dados/pontuação.txt"
 class Sprite(pygame.sprite.Sprite):
@@ -89,10 +88,11 @@ pos_port2_x = pos_port1_x + 300
 pos_port3_x = pos_port2_x + 300
 
 pos_port_y = 397
-
+fonte = "Better VCR 6.1.ttf"
 tela = pygame.display.set_mode((largura, altura))
-fonte_nome = pygame.font.SysFont('arial', 100, True, False)
-fonte_Opc = pygame.font.SysFont('Arial', 40, False, False)
+fonte_nome = pygame.font.Font(fonte, 80)
+fonte_Opc = pygame.font.Font(fonte, 25)
+fonte_dados = pygame.font.Font(fonte, 20)
 relogio = pygame.time.Clock()
 
 pygame.display.set_caption("Prove IT")
@@ -102,13 +102,20 @@ background = pygame.transform.smoothscale(background, (1280, 720))
 Tela_Menu = True
 Tela_Loading = False
 Tela_Perdeu = False
+Tela_Loja = False
+Tela_Ganhou = False
 questão_gerada = False
 Reiniciou = False
 r1, g1, b1 = 0, 0, 0
 r2, g2, b2 = 0, 0, 0
 teclas = None
 num_Sala = 0
-pontuação = Utilitario.carregar_pontuação(arquivo_pontuação)
+dica_jogo = False
+ultima_acao = 0
+delay = 0.5
+dados = Utilitario.carregar_dados("Dados/pontuação.json")
+pontuação = dados.get("pontuação", 0)
+itens = dados.get("itens", {"booster": 0, "dica": 0, "vida": 0})
 Vida = 3
 while True:
     if Tela_Menu:
@@ -116,24 +123,77 @@ while True:
     teclas = pygame.key.get_pressed()
     for evento in pygame.event.get():
         if evento.type == pygame.QUIT:
-            Utilitario.salvar_pontuação(pontuação, arquivo_pontuação)
+            dados = {"pontuação": pontuação, "itens": itens}
+            Utilitario.salvar_dados(dados, "Dados/pontuação.json")
             pygame.QUIT()
             sys.exit()
         if evento.type == pygame.MOUSEBUTTONDOWN:
             if evento.button == 1:
                 mouse_x, mouse_y = evento.pos
                 if (x_Hist <= mouse_x <= x_Hist + largura_Opc and y_Hist <= mouse_y <= y_Hist + altura_Opc):
-                    Tela_Loading = not Tela_Loading
-                    Tela_Menu = not Tela_Menu
+                    if pontuação >= 1:
+                        Tela_Loja = not Tela_Loja
+                        Tela_Menu = not Tela_Menu
+                    else:
+                        Tela_Loading = not Tela_Loading
+                        Tela_Menu = not Tela_Menu
                 elif (x_Arcd <= mouse_x <= x_Arcd + largura_Opc and y_Arcd <= mouse_y <= y_Arcd + altura_Opc):
+                    Utilitario.salvar_pontuação(pontuação, arquivo_pontuação)
                     pygame.QUIT()
                     sys.exit()
+    if Tela_Loja:
+        b_continuar, b_dica, b_vida, b_booster, tex_dica, tex_booster, tex_vida = Geratriz.Tela_Loja(tela,background,largura,fonte_Opc,todas_as_sprites,teclas)
+        Geratriz.gerar_dados(pontuação, num_Sala, Vida, tela, fonte_dados, dados.get("itens", {}).get("dica", 0), dados.get("itens", {}).get("booster", 0))
+        if tex_dica.colliderect(personagem.rect):
+            dica_info = "Dica, um otimo item para te ajudar na sua jornada.\nEste item te da uma dica de como resolver a questão"
+            dica_preco = f'30 Pontos'
+            linhas = dica_info.split("\n")
+            y = 300
+            for linha in linhas:
+                dica_fonte, precod_fonte = fonte_dados.render(linha, True, (0, 0, 0)), fonte_dados.render(dica_preco, True, (0,0,0))
+                tela.blit(dica_fonte, (300, y))
+                tela.blit(precod_fonte, (580, 360))
+                y += 20
+        elif tex_booster.colliderect(personagem.rect):
+            booster_info = "Booster, um item que te deixa ELETRIZANTE!!\nEle fará com que você passe de proxima fase sem dificuldade"
+            booster_preco = f'80 Pontos'
+            linhas = booster_info.split("\n")
+            y = 300
+            for linha in linhas:
+                booster_fonte, precob_fonte = fonte_dados.render(linha, True, (0, 0, 0)), fonte_dados.render(booster_preco, True, (0,0,0))
+                tela.blit(booster_fonte, (300, y))
+                tela.blit(precob_fonte, (580, 360))
+                y += 20
+        elif tex_vida.colliderect(personagem.rect):
+            vida_info = "Vida, uma fonte incrivel de energia, ah como eu gosto dela...\nAumenta sua quantidade de vida, podendo errar mais questões"
+            vida_preco = f'100 Pontos'
+            linhas = vida_info.split("\n")
+            y = 300
+            for linha in linhas:
+                vida_fonte, precov_fonte = fonte_dados.render(linha, True, (0, 0, 0)), fonte_dados.render(vida_preco, True, (0,0,0))
+                tela.blit(vida_fonte, (270, y))
+                tela.blit(precov_fonte, (550, 360))
+                y += 20
+        if evento.type == pygame.KEYDOWN and evento.key == pygame.K_RETURN:
+            if b_dica.colliderect(personagem.rect) and pontuação >= 30:
+                itens["dica"] +=1
+                pontuação -= 30
+            elif b_booster.colliderect(personagem.rect) and pontuação >= 80:
+                itens["booster"] += 1
+                pontuação -= 80
+            elif b_vida.colliderect(personagem.rect) and pontuação >= 100:
+                itens["vida"] += 1
+                Vida += 1
+                pontuação -= 100
+            if b_continuar.colliderect(personagem.rect):
+                Tela_Loading = not Tela_Loading
+                Tela_Loja = not Tela_Loja
     if Tela_Loading:
         if num_Sala <= 100 and Vida > 0:
             if not questão_gerada or not Reiniciou:
                 personagem.rect.x = 50
                 personagem.rect.y = 550
-                questão, resposta, respostaf1, respostaf2, escolher = Geratriz.gerar_questao()
+                questão, resposta, respostaf1, respostaf2, escolher, dica_t = Geratriz.gerar_questao(fonte_dados)
                 largura_quest, largura_text, largura_textF1, largura_textF2, text_quest, text_resV, text_resF1, text_resF2 = Geratriz.gerar_texto(questão, resposta, respostaf1, respostaf2, fonte_Opc)
                 r1, g1, b1 = Utilitario.var_aleatoria(3,0,255)
                 r2, g2, b2 = Utilitario.var_aleatoria(3,0,255)
@@ -142,12 +202,7 @@ while True:
                 Reiniciou = True
             
             Geratriz.gerar_jogo(tela,teclas, r1, g1, b1, r2, g2, b2, background, largura, largura_quest, largura_text, largura_textF1, largura_textF2, port_1, port_2, port_3, pos_port_y, respostas, text_quest, todas_as_sprites)
-            ponto_texto = f'Pontos = {pontuação}'
-            vida_texto = f'Vida = {Vida}'
-            ponto_fonte = fonte_Opc.render(ponto_texto, True, (0, 0, 0))
-            vida_fonte = fonte_Opc.render(vida_texto, True, (0, 0, 0))
-            tela.blit(ponto_fonte, (50, 50))
-            tela.blit(vida_fonte, (50, 100))
+            Geratriz.gerar_dados(pontuação, num_Sala, Vida, tela, fonte_dados, dados.get("itens", {}).get("dica", 0), dados.get("itens", {}).get("booster", 0))
             if evento.type == pygame.KEYDOWN and evento.key == pygame.K_RETURN:
                 pygame.event.get(personagem.rect.x, personagem.rect.y)
                 
@@ -157,58 +212,103 @@ while True:
                     questão_gerada = False
                     pontuação_r = Utilitario.pontuação_respostas(escolher)
                     pontuação += pontuação_r
-                    print(num_Sala)
+                    dica_jogo = False
                 elif resultado =="perdeu":
                     num_Sala += 1
                     Vida -= 1
                     questão_gerada = False
+                    dica_jogo = False
                 resultado = Utilitario.verificar_escolha(port_2, pos_port_y, largura_textF1, respostas[1], personagem.rect.x, personagem.rect.y)
                 if resultado == "avançar":
                     num_Sala += 1
                     questão_gerada = False
                     pontuação_r = Utilitario.pontuação_respostas(escolher)
                     pontuação += pontuação_r
-                    print(num_Sala)
+                    dica_jogo = False
                 elif resultado =="perdeu":
                     num_Sala += 1
                     Vida -= 1
                     questão_gerada = False
+                    dica_jogo = False
                 resultado = Utilitario.verificar_escolha(port_3, pos_port_y, largura_textF2, respostas[2], personagem.rect.x, personagem.rect.y)
                 if resultado == "avançar":
                     num_Sala += 1
                     questão_gerada = False
                     pontuação_r = Utilitario.pontuação_respostas(escolher)
                     pontuação += pontuação_r
-                    print(num_Sala)
+                    dica_jogo = False
                 elif resultado =="perdeu":
                     num_Sala += 1
                     Vida -= 1
                     questão_gerada = False
+                    dica_jogo = False
+            keys = pygame.key.get_pressed()
+            tempo_atual = time.time()
+            if keys[pygame.K_1] and tempo_atual - ultima_acao > delay:
+                if itens["booster"] >= 1:
+                    #itens["booster"] -= 1
+                    num_Sala += 1
+                    questão_gerada = False
+                    dica_jogo = False
+                    ultima_acao = tempo_atual
+            elif keys[pygame.K_2] and tempo_atual - ultima_acao > delay:
+                if itens["dica"] >= 1:
+                    dica_jogo = True
+                    ultima_acao = tempo_atual
+            if dica_jogo:
+                if escolher == 'Linear':
+                    tela.blit(dica_t,(250,330))
+                elif escolher == 'Divisão':
+                    tela.blit(dica_t,(250,330))
+                elif escolher == "Quadratica":
+                    tela.blit(dica_t,(150,330))
+
         elif num_Sala == 101 and Vida > 0:
-            botao_inicial = Geratriz.Tela_Ganhou(tela, background, largura, fonte_Opc)
-            if evento.type == pygame.MOUSEBUTTONDOWN:
-                if evento.button == 1:
-                    mouse_x, mouse_y = evento.pos
-                    if botao_inicial.collidepoint(evento.pos):
-                        Tela_Menu = not Tela_Menu
-                        Tela_Loading = not Tela_Loading
+            Tela_Ganhou = not Tela_Ganhou
+            Tela_Loading = not Tela_Loading
+            dica_jogo = False
+
         elif Vida == 0:
             Tela_Perdeu = not Tela_Perdeu
             Tela_Loading = not Tela_Loading
-            
-    if Tela_Perdeu:
-        botao_inicial, botao_reiniciar = Geratriz.tela_perdeu(tela, background, largura, fonte_Opc)
+            dica_jogo = False
+    
+    if Tela_Ganhou:
+        botao_inicial_G = Geratriz.Tela_Ganhou(tela, background, fonte_Opc)
         if evento.type == pygame.MOUSEBUTTONDOWN:
             if evento.button == 1:
                 mouse_x, mouse_y = evento.pos
-                if botao_inicial.collidepoint(evento.pos):
+                if botao_inicial_G.collidepoint(evento.pos):
+                    personagem.rect.x = 50
+                    personagem.rect.y = 550
+                    num_Sala = 0
+                    Vida = 3
+                    Reiniciou = not Reiniciou
+                    Tela_Menu = True
+                    Tela_Ganhou = False
+                    Tela_Loja = False
+                    dica_jogo = False
+    if Tela_Perdeu:
+        botao_inicial_P, botao_reiniciar = Geratriz.tela_perdeu(tela, background, largura, fonte_Opc)
+        if evento.type == pygame.MOUSEBUTTONDOWN:
+            if evento.button == 1:
+                mouse_x, mouse_y = evento.pos
+                if botao_inicial_P.collidepoint(evento.pos):
+                    personagem.rect.x = 50
+                    personagem.rect.y = 550
+                    num_Sala = 0
                     Vida = 3
                     Reiniciou = not Reiniciou
                     Tela_Menu = not Tela_Menu
                     Tela_Perdeu = not Tela_Perdeu
+                    dica_jogo = False
                 elif botao_reiniciar.collidepoint(evento.pos):
+                    personagem.rect.x = 50
+                    personagem.rect.y = 550
+                    num_Sala = 0
                     Vida = 3
                     Reiniciou = not Reiniciou
-                    Tela_Perdeu, Tela_Loading = not Tela_Perdeu, not Tela_Loading
+                    Tela_Perdeu, Tela_Loja = not Tela_Perdeu, not Tela_Loja
+                    dica_jogo = False
     relogio.tick(60)
     pygame.display.flip()
