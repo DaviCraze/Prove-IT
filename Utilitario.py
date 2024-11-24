@@ -9,16 +9,17 @@ class Utilitario:
         if os.path.exists(Arquivo):
             with open(Arquivo, "r") as f:
                 try:
-                    return json.load(f)
+                    dados = json.load(f)
+                    return dados
                 except ValueError:
-                    return {"pontuação": 0, "itens": {}}
+                    return {"pontuação": 0,"errouprimeira": True, "itens": {}, "primeira_vez_L": True}
         else: 
-            return {"pontuação": 0, "itens": {}}
+            return {"pontuação": 0,"errouprimeira": True, "itens": {}, "primeira_vez_L": True, "primeira_vez_G": True}
     
     @staticmethod
     def salvar_dados(dados, Arquivo):
         with open(Arquivo, "w") as f:
-            json.dump(dados, f, indent=4)
+            json.dump(dados, f, ensure_ascii=False, indent=4)
     
     @staticmethod
     def var_aleatoria(quant, menor, topo):
@@ -48,7 +49,7 @@ class Utilitario:
         dica = f'Faça primeiro a multiplicação, depois a subtração'
         dica_t = fonte_dados.render(dica, True, (0,0,0))
         a, b = Utilitario.var_aleatoria(2,0,9)
-        questão = f'2 x {a} - {b} = 0'
+        questão = f'2 x {a} - {b} = x'
         resposta = f'x = {(2*a) - b}'
         c, d = Utilitario.var_aleatoria(2,0,9)
         respostaf1 = f'x = {(2*c) - d}'
