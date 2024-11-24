@@ -23,8 +23,67 @@ class Geratriz:
             return questao, resposta, falsa1, falsa2, escolher, dica_t
     
     @staticmethod
-    def gerar_menu(tela, background, largura, altura, largura_Opc, altura_Opc, fonte_nome, fonte_Opc):
-        nome_do_jogo = f'Prove It'
+    def exibir_fala(tela, fala_atual, fonte, posicao="topo"):
+        if fala_atual:
+            if posicao == "topo":
+                dialogoP = (50, 50, 1180, 200)
+                dialogoB = (60, 60, 1160, 180)
+                texto_y = 70
+            elif posicao == "baixo":
+                dialogoP = (50, 500, 1180, 200)
+                dialogoB = (60, 510, 1160, 180)
+                texto_y = 520
+
+            pygame.draw.rect(tela, (0,0,0),dialogoP)
+            pygame.draw.rect(tela, (255,255,255),dialogoB)
+
+            linhas = fala_atual.split("\n")
+            for linha in linhas:
+                fala_texto = fonte.render(linha, True,(0,0,0))
+                tela.blit(fala_texto, (70, texto_y))
+                texto_y += 30
+
+    @staticmethod
+    def gerar_desafio(fonte_desafios,tela,teclas, r1, g1, b1, r2, g2, b2,todas_as_sprites, fonte_Opc):
+        tipos_desafio = [
+            {"Pergunta": "Sejam p e q proposições, tais que p: “minha caneta é roxa” e q: “meu caderno é azul”.\nA expressão logica equivalente a “se minha caneta é roxa então meu caderno nao é azul” é p→ ¬ q?", "resposta": "sim"}
+        ]
+        sim = f'Sim'
+        nao = f'Não'
+        t_sim = fonte_Opc.render(sim, True, (0, 0, 0))
+        t_nao = fonte_Opc.render(nao, True, (0, 0, 0))
+        random.shuffle(tipos_desafio)
+        pergunta_atual = tipos_desafio.pop(0)
+        pergunta_texto = pergunta_atual["Pergunta"]
+        resposta_correta = pergunta_atual["resposta"]
+
+        Geratriz.gerar_fundo(tela, r1, g1, b1, r2, g2, b2)
+        pygame.draw.rect(tela, (0, 0, 0), (420, 397, 200, 250))
+        porta_S = pygame.draw.rect(tela, (255, 255, 255), (420 + 13, 407, 175 , 240))
+        pygame.draw.rect(tela, (0, 0, 0), (720, 397, 200 , 250))
+        porta_N = pygame.draw.rect(tela, (255, 255, 255), (720 + 13, 407, 175, 240))
+
+        if resposta_correta == "sim":
+            respostas_d = [(t_sim, "correta"), (t_nao, "errada")]
+        else:
+            respostas_d = [(t_sim, "errada"), (t_nao, "correta")]
+
+        linhas = pergunta_texto.split("\n")
+        y = 200
+        for linha in linhas:
+            text_pergunta = fonte_desafios.render(linha, True, (0, 0, 0))
+            tela.blit(text_pergunta,(200, y))
+            y += 20
+        tela.blit(respostas_d[0][0], (440, 420 ))
+        tela.blit(respostas_d[1][0], (740, 420 ))
+        
+        todas_as_sprites.draw(tela)
+        todas_as_sprites.update(teclas)
+
+        return porta_S, porta_N, respostas_d
+    @staticmethod
+    def gerar_menu(tela, background, largura, altura, largura_Opc, altura_Opc, fonte_nome, fonte_Opc,logo):
+        #nome_do_jogo = f'Prove It'
         bot_Hist = f'Modo Historia'
         bot_Arcd = f'Modo Arcade'
         
@@ -34,16 +93,17 @@ class Geratriz:
         x_Arcd = largura/2 - largura_Opc/2
         y_Arcd = altura/1.5
         
-        texto_jogo = fonte_nome.render(nome_do_jogo, True, (0, 0, 0))
+        #texto_jogo = fonte_nome.render(nome_do_jogo, True, (0, 0, 0))
         texto_Hist = fonte_Opc.render(bot_Hist, True, (255, 255, 255))
         texto_Arcd = fonte_Opc.render(bot_Arcd, True, (255, 255, 255))
 
         tela.blit(background, (0, 0))
+        tela.blit(logo, (340, 100))
 
         pygame.draw.rect(tela, (0, 0, 0), (x_Hist, y_Hist, largura_Opc, altura_Opc))
         pygame.draw.rect(tela, (0, 0, 0), (x_Arcd, y_Arcd, largura_Opc, altura_Opc))
 
-        tela.blit(texto_jogo, (420, altura - 600))
+        #tela.blit(texto_jogo, (420, altura - 600))
         tela.blit(texto_Hist, (x_Hist + 2, y_Hist + 10))
         tela.blit(texto_Arcd, (x_Arcd + 12, y_Arcd + 15))
     
@@ -182,11 +242,12 @@ class Geratriz:
         todas_as_sprites.update(teclas)
         return b_continuar, b_dica, b_vida, b_booster, tex_dica, tex_booster, tex_vida
     @staticmethod
-    def gerar_dados(pontuação, num_Sala, Vida, tela, fonte_dados, dica, booster):
-        ponto_texto, vida_texto, sala_texto, dica_texto, booster_texto = f'Pontos = {pontuação}', f'Vida = {Vida}', f'Nº Sala = {num_Sala}', f'Dicas = {dica}', f'Boosters = {booster}'
+    def gerar_dados(pontuação, num_Sala, Vida, tela, fonte_dados, dica, booster, personagem):
+        ponto_texto, vida_texto, sala_texto, dica_texto, booster_texto = f'Pontos = {pontuação}', f'Vida = {Vida}', f'Nº {num_Sala}', f'Dicas = {dica}', f'Boosters = {booster}'
         ponto_fonte, vida_fonte, sala_fonte, dica_fonte, booster_fonte = fonte_dados.render(ponto_texto, True, (0, 0, 0)), fonte_dados.render(vida_texto, True, (0, 0, 0)), fonte_dados.render(sala_texto, True, (0, 0, 0)), fonte_dados.render(dica_texto, True, (0, 0, 0)), fonte_dados.render(booster_texto, True, (0, 0, 0))
         tela.blit(ponto_fonte, (20, 30))
         tela.blit(vida_fonte, (20, 65))
-        tela.blit(sala_fonte, (1100, 30))
+        tela.blit(sala_fonte, (1180, 30))
         tela.blit(dica_fonte, (20, 100))
         tela.blit(booster_fonte, (20, 135))
+        personagem.desenhar_vida(tela, Vida)
