@@ -1,6 +1,6 @@
 import pygame
 from Utilitario import *
-from Questoes import *
+
 class Geratriz:
     
     @staticmethod
@@ -44,39 +44,38 @@ class Geratriz:
                 texto_y += 30
 
     @staticmethod
-    def gerar_desafio(fonte_desafios,tela,teclas, r1, g1, b1, r2, g2, b2,todas_as_sprites, fonte_Opc):
+    def gerar_desafio(fonte_desafios,tela,teclas,todas_as_sprites, fonte, background,personagem):
         tipos_desafio = [
-            {"Pergunta": "Sejam p e q proposições, tais que p: “minha caneta é roxa” e q: “meu caderno é azul”.\nA expressão logica equivalente a “se minha caneta é roxa então meu caderno nao é azul” é p→ ¬ q?", "resposta": "sim"}
+            {"Pergunta": "Sejam p e q proposições, tais que p: “minha caneta é roxa”\ne q: “meu caderno é azul”. A expressão logica equivalente a\n“se minha caneta é roxa então meu caderno nao é azul” é p→ ¬ q?", "resposta": "sim"}
         ]
         sim = f'Sim'
         nao = f'Não'
-        t_sim = fonte_Opc.render(sim, True, (0, 0, 0))
-        t_nao = fonte_Opc.render(nao, True, (0, 0, 0))
+        t_sim = fonte.render(sim, True, (0, 0, 0))
+        t_nao = fonte.render(nao, True, (0, 0, 0))
         random.shuffle(tipos_desafio)
         pergunta_atual = tipos_desafio.pop(0)
         pergunta_texto = pergunta_atual["Pergunta"]
         resposta_correta = pergunta_atual["resposta"]
-
-        Geratriz.gerar_fundo(tela, r1, g1, b1, r2, g2, b2)
-        pygame.draw.rect(tela, (0, 0, 0), (420, 397, 200, 250))
-        porta_S = pygame.draw.rect(tela, (255, 255, 255), (420 + 13, 407, 175 , 240))
-        pygame.draw.rect(tela, (0, 0, 0), (720, 397, 200 , 250))
-        porta_N = pygame.draw.rect(tela, (255, 255, 255), (720 + 13, 407, 175, 240))
-
+        pygame.draw.rect(tela, (0, 0, 0), (470, 397, 150, 250))
+        porta_S = pygame.draw.rect(tela, (255, 255, 255), (470 + 13, 407, 125 , 240))
+        pygame.draw.rect(tela, (0, 0, 0), (880, 397, 250 , 250))
+        porta_N = pygame.draw.rect(tela, (255, 255, 255), (880 + 13, 407, 125, 240))
+        tela.blit(background, (0, 0))
         if resposta_correta == "sim":
             respostas_d = [(t_sim, "correta"), (t_nao, "errada")]
         else:
             respostas_d = [(t_sim, "errada"), (t_nao, "correta")]
 
         linhas = pergunta_texto.split("\n")
-        y = 200
+        y = 100
         for linha in linhas:
             text_pergunta = fonte_desafios.render(linha, True, (0, 0, 0))
-            tela.blit(text_pergunta,(200, y))
+            tela.blit(text_pergunta,(400, y))
             y += 20
-        tela.blit(respostas_d[0][0], (440, 420 ))
-        tela.blit(respostas_d[1][0], (740, 420 ))
-        
+        tela.blit(respostas_d[0][0], (520, 350))
+        tela.blit(respostas_d[1][0], (930, 350))
+
+        personagem.desenhar_jogo_desafio(tela)
         todas_as_sprites.draw(tela)
         todas_as_sprites.update(teclas)
 
@@ -108,11 +107,11 @@ class Geratriz:
         tela.blit(texto_Arcd, (x_Arcd + 12, y_Arcd + 15))
     
     @staticmethod
-    def gerar_texto(questão, resposta, respostaf1, respostaf2, fonte_Opc):
-        text_quest = fonte_Opc.render(questão, True, (0, 0, 0))
-        text_resV = fonte_Opc.render(resposta, True, (0, 0, 0))
-        text_resF1 = fonte_Opc.render(respostaf1, True, (0, 0, 0))
-        text_resF2 = fonte_Opc.render(respostaf2, True, (0, 0, 0))
+    def gerar_texto(questão, resposta, respostaf1, respostaf2, fonte):
+        text_quest = fonte.render(questão, True, (0, 0, 0))
+        text_resV = fonte.render(resposta, True, (0, 0, 0))
+        text_resF1 = fonte.render(respostaf1, True, (0, 0, 0))
+        text_resF2 = fonte.render(respostaf2, True, (0, 0, 0))
         largura_quest, altura_quest = text_quest.get_size()
         largura_text, altura_text = text_resV.get_size()
         largura_textF1, altura_textF1 = text_resF1.get_size()
@@ -122,9 +121,9 @@ class Geratriz:
     @staticmethod
     def sala_nova(largura, text_resV, text_resF1, text_resF2):
         
-        pos_port1_x = largura/4
-        pos_port2_x = pos_port1_x + 300
-        pos_port3_x = pos_port2_x + 300
+        pos_port1_x = 470
+        pos_port2_x = pos_port1_x + 200
+        pos_port3_x = pos_port2_x + 200
         
         lista_de_portas = [pos_port1_x, pos_port2_x, pos_port3_x]
         port_1 = random.choice(lista_de_portas)
@@ -139,34 +138,32 @@ class Geratriz:
         return port_1, port_2, port_3, respostas
     
     @staticmethod
-    def gerar_jogo(tela,teclas, r1, g1, b1, r2, g2, b2,  background, largura, largura_quest, largura_text, largura_textF1, largura_textF2, port_1, port_2, port_3, pos_port_y, respostas, text_quest, todas_as_sprites):
+    def gerar_jogo(tela,teclas, background, largura, port_1, port_2, port_3, pos_port_y, respostas, text_quest, todas_as_sprites, personagem):
+        
+        pos_port1_x = 470
+        pos_port2_x = pos_port1_x + 200
+        pos_port3_x = pos_port2_x + 200
+
+        pygame.draw.rect(tela, (0, 0, 0), (pos_port1_x, pos_port_y, 120 + 50, 250))
+        pygame.draw.rect(tela, (255, 255, 255), (pos_port1_x + 13, 407, 120 + 25, 240))
+        pygame.draw.rect(tela, (0, 0, 0), (pos_port2_x, pos_port_y, 120 + 50, 250))
+        pygame.draw.rect(tela, (255, 255, 255), (pos_port2_x + 13, 407, 120 + 25, 240))
+        pygame.draw.rect(tela, (0, 0, 0), (pos_port3_x, pos_port_y, 120 + 50, 250))
+        pygame.draw.rect(tela, (255, 255, 255), (pos_port3_x + 13, 407, 120 + 25, 240))
+
         tela.blit(background, (0, 0))
-        
-        Geratriz.gerar_fundo(tela, r1, g1, b1, r2, g2, b2)
-        
-        pos_port1_x = largura/4
-        pos_port2_x = pos_port1_x + 300
-        pos_port3_x = pos_port2_x + 300
+        text_quest_widht = text_quest.get_width()
+        x_text_quest = (largura - text_quest_widht) // 1.65
+        tela.blit(text_quest, (x_text_quest, 150))
 
-        pygame.draw.rect(tela, (0, 0, 0), (largura/2 - 100, 200, largura_quest + 50, 80))
-        pygame.draw.rect(tela, (255, 255, 255), (largura/2 - 88.5, 210, largura_quest + 25, 60))
+        personagem.desenhar_jogo(tela)
+        todas_as_sprites.draw(tela) 
 
-        tela.blit(text_quest, (largura/2 - 80, 215))
-    
-        pygame.draw.rect(tela, (0, 0, 0), (pos_port1_x, pos_port_y, largura_text + 50, 250))
-        pygame.draw.rect(tela, (255, 255, 255), (pos_port1_x + 13, 407, largura_text + 25, 240))
-        pygame.draw.rect(tela, (0, 0, 0), (pos_port2_x, pos_port_y, largura_textF1 + 50, 250))
-        pygame.draw.rect(tela, (255, 255, 255), (pos_port2_x + 13, 407, largura_textF1 + 25, 240))
-        pygame.draw.rect(tela, (0, 0, 0), (pos_port3_x, pos_port_y, largura_textF2 + 50, 250))
-        pygame.draw.rect(tela, (255, 255, 255), (pos_port3_x + 13, 407, largura_textF2 + 25, 240))
+        tela.blit(respostas[0][0], (port_1 + 20, 350)) 
+        tela.blit(respostas[1][0], (port_2 + 20, 350))
+        tela.blit(respostas[2][0], (port_3 + 20, 350))
 
-        todas_as_sprites.draw(tela)
         todas_as_sprites.update(teclas)
-
-        tela.blit(respostas[0][0], (port_1 + 20, 420)) 
-        tela.blit(respostas[1][0], (port_2 + 20, 420))
-        tela.blit(respostas[2][0], (port_3 + 20, 420))
-
     @staticmethod
     def tela_perdeu(tela, background, largura, fonte_Opc):
         tela.blit(background, (0, 0))
