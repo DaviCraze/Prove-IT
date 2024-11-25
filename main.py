@@ -2,6 +2,7 @@ import pygame
 import sys
 from Geratriz import *
 from Utilitario import *
+from Tela import *
 import falas
 import time
 
