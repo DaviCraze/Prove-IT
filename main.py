@@ -2,41 +2,34 @@ import pygame
 import sys
 from Geratriz import *
 from Utilitario import *
-from Tela import *
 import falas
 import time
 
-
 pygame.init()
-arquivo_pontuação = "Dados/pontuação.txt"
+
+pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=512)
+efeito_acerto = pygame.mixer.Sound("Musicas/acerto.wav")
+efeito_erro = pygame.mixer.Sound("Musicas/erro.wav")
+efeito_AVA = pygame.mixer.Sound("Musicas/AVA.wav")
+efeito_LOJISTA = pygame.mixer.Sound("Musicas/LOJISTA.wav")
+arquivo_pontuação = "Dados/pontuação.json"
+trilha_loja = "Musicas/Loja.mp3"
+trilha_jogo = "Musicas/Jogo.mp3"
+musica_atual = None
 class Sprite(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.sprites = [
-            pygame.image.load('Sprites/robot1.png'),
-            pygame.image.load('Sprites/robot2.png'),
-            pygame.image.load('Sprites/robot3.png'),
-            pygame.image.load('Sprites/robot4.png'),
-            pygame.image.load('Sprites/robot5.png'),
-            pygame.image.load('Sprites/robot6.png')
-        ]
-        self.sprites_andando = [
-            pygame.image.load('Sprites/personagem_andando1.png'),
-            pygame.image.load('Sprites/personagem_andando2.png'),
-            pygame.image.load('Sprites/personagem_andando3.png'),
-            pygame.image.load('Sprites/personagem_andando4.png')
-        ]
-        self.sprites_vida = [
-            pygame.image.load('Sprites/Vida1.png'),
-            pygame.image.load('Sprites/Vida2.png'),
-            pygame.image.load('Sprites/Vida3.png'),
-            pygame.image.load('Sprites/Vida4.png'),
-            pygame.image.load('Sprites/Vida5.png'),
-            pygame.image.load('Sprites/Vida6.png')
-        ]
-        self.atual = 0
+        self.sprites = [pygame.image.load(f'Sprites/robot{i}.png') for i in range(1,7)]
+        self.sprites_andando = [pygame.image.load(f'Sprites/personagem_andando{i}.png') for i in range(1,5)]
+        self.sprites_vida = [pygame.image.load(f'Sprites/Vida{i}.png') for i in range(1, 7)]
+        self.sprites_jogo = [pygame.image.load(f'Sprites/portasOverlay{i}.png') for i in range(1,4)]
+        self.sprites_desafio = [pygame.image.load(f'Sprites/2portas{i}.png') for i in range(1,4)]
+        self.atual_personagem = 0
+        self.atual_jogo = 0
+        self.tempo_anterior = time.time()
+        self.delay_entre_frames = 0.1
 
-        self.image = self.sprites[self.atual]
+        self.image = self.sprites[self.atual_personagem]
         self.image = pygame.transform.scale(self.image, (28*3, 32*4))
         self.rect = self.image.get_rect()
         self.rect.topleft = (100, 550)
@@ -51,15 +44,15 @@ class Sprite(pygame.sprite.Sprite):
             self.andando = False
 
         if self.andando:
-            self.atual += 0.10
-            if self.atual >= len(self.sprites_andando):
-                self.atual = 0
-            self.image = self.sprites_andando[int(self.atual)]
+            self.atual_personagem += 0.10
+            if self.atual_personagem >= len(self.sprites_andando):
+                self.atual_personagem = 0
+            self.image = self.sprites_andando[int(self.atual_personagem)]
         else:
-            self.atual += 0.08
-            if self.atual >= len(self.sprites):
-                self.atual = 0
-            self.image = self.sprites[int(self.atual)]
+            self.atual_personagem += 0.08
+            if self.atual_personagem >= len(self.sprites):
+                self.atual_personagem = 0
+            self.image = self.sprites[int(self.atual_personagem)]
 
         self.image = pygame.transform.scale(self.image, (28*3, 32*4))
 
@@ -85,6 +78,34 @@ class Sprite(pygame.sprite.Sprite):
             vida_sprite = self.sprites_vida[Vida - 1]
             vida_sprite = pygame.transform.scale(vida_sprite, (60, 100))
             tela.blit(vida_sprite,(20, 600))
+
+    def desenhar_jogo(self, tela):
+        tempo_atual = time.time()
+        if tempo_atual - self.tempo_anterior > self.delay_entre_frames:
+            self.atual_jogo += 1
+            self.tempo_anterior = tempo_atual
+
+        if self.atual_jogo >= len(self.sprites_jogo):
+            self.atual_jogo = 0
+        
+        jogo_sprite = self.sprites_jogo[int(self.atual_jogo)]
+        jogo_sprite = pygame.transform.scale(jogo_sprite, (1280, 720))
+        tela.blit(jogo_sprite, (0, 0))
+    
+    def desenhar_jogo_desafio(self, tela):
+        tempo_atual = time.time()
+        if tempo_atual - self.tempo_anterior > self.delay_entre_frames:
+            self.atual_jogo += 1
+            self.tempo_anterior = tempo_atual
+
+        if self.atual_jogo >= len(self.sprites_desafio):
+            self.atual_jogo = 0
+        
+        jogo_sprite = self.sprites_desafio[int(self.atual_jogo)]
+        jogo_sprite = pygame.transform.scale(jogo_sprite, (1280, 720))
+        tela.blit(jogo_sprite, (0, 0))
+    
+    
 
 todas_as_sprites = pygame.sprite.Group()
 personagem = Sprite()
@@ -122,6 +143,10 @@ logo = pygame.image.load("Imagens/Logo1.png")
 logo_R = pygame.transform.scale(logo, (600,140))
 background = pygame.image.load("Imagens/Tela_Fundo3.png")
 background = pygame.transform.smoothscale(background, (1280, 720))
+background_jogo = pygame.image.load("Imagens/background.png")
+background_jogo = pygame.transform.scale(background_jogo, (1280,720))
+background_desafio = pygame.image.load("Imagens/2portasBackground.png")
+background_desafio = pygame.transform.scale(background_desafio, (1280,720))
 Tela_Menu = True
 Tela_Loading = False
 Tela_Perdeu = False
@@ -137,11 +162,13 @@ dica_jogo = False
 ultima_acao = 0
 delay = 0.5
 dados = Utilitario.carregar_dados("Dados/pontuação.json")
-pontuação = dados.get("pontuação", 0)
-itens = dados.get("itens", {"booster": 0, "dica": 0, "vida": 0})
-primeira_vez_L = dados.get("primeira_vez_L", None)
-errouprimeira = dados.get("errouprimeira", None)
-primeira_vez_G = dados.get("primeira_vez_G", None)
+pontuação = dados.get("pontuacao", 0)
+itens = dados.get("itens", {"booster": 0, "dica": 0, "vida": 3})
+primeira_vez_L = dados.get("primeira_vez_L", True)
+errouprimeira = dados.get("errouprimeira", True)
+primeira_vez_G = dados.get("primeira_vez_G", True)
+acertouprimeira = dados.get("acertouprimeira", True)
+desafioprimeira = dados.get("desafioprimeira", True)
 jogo_bloqueado = False
 while True:
     Vida = itens.get("vida", 0)
@@ -153,7 +180,12 @@ while True:
         if evento.type == pygame.QUIT:
             if Vida < 3:
                 itens["vida"] = 3
-            dados = {"pontuação": pontuação, "itens": itens}
+            dados = {"pontuacao": pontuação, "itens": itens}
+            dados["primeira_vez_L"] = primeira_vez_L
+            dados["primeira_vez_G"] = primeira_vez_G
+            dados["errouprimeira"] = errouprimeira
+            dados["acertouprimeira"] = acertouprimeira
+            dados["desafioprimeira"] = desafioprimeira
             Utilitario.salvar_dados(dados, "Dados/pontuação.json")
             pygame.QUIT()
             sys.exit()
@@ -172,19 +204,23 @@ while True:
                     pygame.QUIT()
                     sys.exit()
     if Tela_Loja:
+        Utilitario.tocar_trilha_sonora(trilha_loja)
         b_continuar, b_dica, b_vida, b_booster, tex_dica, tex_booster, tex_vida = Geratriz.Tela_Loja(tela,background,largura,fonte_Opc,todas_as_sprites,teclas)
         falas_ativas = falas.cutscene_falas["boas_vindasL"]
         if primeira_vez_L:
             if evento.type == pygame.KEYDOWN:
                 if evento.key == pygame.K_RETURN:
                     if not falas_ativas.acabou() and tempo_atual - ultima_acao > delay:
+                        efeito_LOJISTA.play()
                         falas_ativas.proximo()
                         ultima_acao = tempo_atual
 
             if not falas_ativas.acabou():
+                pygame.mixer.music.set_volume(0.1)
                 Geratriz.exibir_fala(tela, falas_ativas.mostrar_fala(), fonte_Opc, falas_ativas.mostrar_posicao())
                 jogo_bloqueado = True
             else:
+                pygame.mixer.music.set_volume(0.3)
                 jogo_bloqueado = False
             
             if jogo_bloqueado:
@@ -192,8 +228,7 @@ while True:
                 relogio.tick(60)
                 continue 
             primeira_vez_L = False
-            dados["primeira_vez_L"] = False
-            Utilitario.salvar_dados(dados, "Dados/pontuação.json")
+            dados["primeira_vez_L"] = primeira_vez_L
         Geratriz.gerar_dados(pontuação, num_Sala, Vida, tela, fonte_dados, dados.get("itens", {}).get("dica", 0), dados.get("itens", {}).get("booster", 0), personagem)
         if tex_dica.colliderect(personagem.rect):
             dica_info = "Dica, um otimo item para te ajudar na sua jornada.\nEste item te da uma dica de como resolver a questão"
@@ -250,15 +285,39 @@ while True:
                 Tela_Loading = not Tela_Loading
                 Tela_Loja = not Tela_Loja
     if Tela_Loading:
+        Utilitario.tocar_trilha_sonora(trilha_jogo)
         if num_Sala % 10 == 0 and Vida > 0:
             if not questão_gerada or not Reiniciou:
                 personagem.rect.x = 50
                 personagem.rect.y = 550
-                r1, g1, b1 = Utilitario.var_aleatoria(3,0,255)
-                r2, g2, b2 = Utilitario.var_aleatoria(3,0,255)
+                #r1, g1, b1 = Utilitario.var_aleatoria(3,0,255)
+                #r2, g2, b2 = Utilitario.var_aleatoria(3,0,255)
                 questão_gerada = True
                 Reiniciou = True
-            porta_S, porta_N, respostas_d = Geratriz.gerar_desafio(fonte_desafios,tela,teclas, r1, g1, b1, r2, g2, b2,todas_as_sprites, fonte_Opc)
+            porta_S, porta_N, respostas_d = Geratriz.gerar_desafio(fonte_desafios,tela,teclas,todas_as_sprites, fonte_Opc, background_desafio, personagem)
+            if desafioprimeira:
+                falas_ativas = falas.cutscene_falas["saladesafio"]
+                if evento.type == pygame.KEYDOWN:
+                    if evento.key == pygame.K_RETURN:
+                        if not falas_ativas.acabou() and tempo_atual - ultima_acao > delay:
+                            efeito_AVA.play()
+                            falas_ativas.proximo()
+                            ultima_acao = tempo_atual
+
+                if not falas_ativas.acabou():
+                    pygame.mixer.music.set_volume(0.1)
+                    Geratriz.exibir_fala(tela, falas_ativas.mostrar_fala(), fonte_Opc, falas_ativas.mostrar_posicao())
+                    jogo_bloqueado = True
+                else:
+                    pygame.mixer.music.set_volume(0.3)
+                    jogo_bloqueado = False
+                
+                if jogo_bloqueado:
+                    pygame.display.flip()
+                    relogio.tick(60)
+                    continue 
+                desafioprimeira = False
+                dados["desafioprimeira"] = desafioprimeira
             Geratriz.gerar_dados(pontuação, num_Sala, Vida, tela, fonte_dados, dados.get("itens", {}).get("dica", 0), dados.get("itens", {}).get("booster", 0), personagem)
             if evento.type == pygame.KEYDOWN and evento.key == pygame.K_RETURN:
                 resultado = None
@@ -275,7 +334,7 @@ while True:
                 if resultado == "avançar":
                     num_Sala += 1
                     questão_gerada = False
-                    pontuação += 50
+                    pontuação += 35
                     dica_jogo = False
                 elif resultado == "perdeu":
                     num_Sala += 1
@@ -284,60 +343,88 @@ while True:
                     questão_gerada = False
                     dica_jogo = False
         elif num_Sala <= 100 and Vida > 0:
-            
             if not questão_gerada or not Reiniciou:
                 personagem.rect.x = 50
                 personagem.rect.y = 550
                 questão, resposta, respostaf1, respostaf2, escolher, dica_t = Geratriz.gerar_questao(fonte_dados)
-                largura_quest, largura_text, largura_textF1, largura_textF2, text_quest, text_resV, text_resF1, text_resF2 = Geratriz.gerar_texto(questão, resposta, respostaf1, respostaf2, fonte_Opc)
-                r1, g1, b1 = Utilitario.var_aleatoria(3,0,255)
-                r2, g2, b2 = Utilitario.var_aleatoria(3,0,255)
+                largura_quest, largura_text, largura_textF1, largura_textF2, text_quest, text_resV, text_resF1, text_resF2 = Geratriz.gerar_texto(questão, resposta, respostaf1, respostaf2, fonte_dados)
+                #r1, g1, b1 = Utilitario.var_aleatoria(3,0,255)
+                #r2, g2, b2 = Utilitario.var_aleatoria(3,0,255)
                 port_1, port_2, port_3, respostas = Geratriz.sala_nova(largura, text_resV, text_resF1, text_resF2)
                 questão_gerada = True
                 Reiniciou = True
-                if errouprimeira:
-                    falas_ativas = falas.cutscene_falas["erro1"]
-                    if evento.type == pygame.KEYDOWN:
-                        if evento.key == pygame.K_RETURN:
-                            if not falas_ativas.acabou() and tempo_atual - ultima_acao > delay:
-                                falas_ativas.proximo()
-                                ultima_acao = tempo_atual
-                    if not falas_ativas.acabou():
-                        Geratriz.exibir_fala(tela, falas_ativas.mostrar_fala(), fonte_Opc, falas_ativas.mostrar_posicao())
-                        jogo_bloqueado = True
-                    else:
-                        jogo_bloqueado = False
-                    
-                    if jogo_bloqueado:
-                        pygame.display.flip()
-                        relogio.tick(60)
-                        continue
-                    errouprimeira = False
-                    dados["errouprimeira"] = False
-                    Utilitario.salvar_dados(dados, "Dados/pontuação.json")
-            Geratriz.gerar_jogo(tela,teclas, r1, g1, b1, r2, g2, b2, background, largura, largura_quest, largura_text, largura_textF1, largura_textF2, port_1, port_2, port_3, pos_port_y, respostas, text_quest, todas_as_sprites)
-            falas_ativas = falas.cutscene_falas["glados1encontro"]
-            if primeira_vez_G:
+            Geratriz.gerar_jogo(tela,teclas, background_jogo, largura, port_1, port_2, port_3, pos_port_y, respostas, text_quest, todas_as_sprites, personagem)
+            if Vida < 3 and errouprimeira:
+                falas_ativas = falas.cutscene_falas["erro1"]
                 if evento.type == pygame.KEYDOWN:
                     if evento.key == pygame.K_RETURN:
                         if not falas_ativas.acabou() and tempo_atual - ultima_acao > delay:
+                            efeito_AVA.play()
                             falas_ativas.proximo()
                             ultima_acao = tempo_atual
 
                 if not falas_ativas.acabou():
+                    pygame.mixer.music.set_volume(0.1)
+                    if falas_ativas.mostrar_index >= 3:
+                        personagem.desenhar_vida(tela, Vida)
                     Geratriz.exibir_fala(tela, falas_ativas.mostrar_fala(), fonte_Opc, falas_ativas.mostrar_posicao())
                     jogo_bloqueado = True
                 else:
+                    pygame.mixer.music.set_volume(0.3)
                     jogo_bloqueado = False
-                
+
+                if jogo_bloqueado:
+                    pygame.display.flip()
+                    relogio.tick(60)
+                    continue
+                errouprimeira = False
+                dados["errouprimeira"] = errouprimeira
+            elif pontuação > 0 and acertouprimeira:
+                falas_ativas = falas.cutscene_falas["acerto"]
+                if evento.type == pygame.KEYDOWN:
+                    if evento.key == pygame.K_RETURN:
+                        if not falas_ativas.acabou() and tempo_atual - ultima_acao > delay:
+                            efeito_AVA.play()
+                            falas_ativas.proximo()
+                            ultima_acao = tempo_atual
+
+                if not falas_ativas.acabou():
+                    pygame.mixer.music.set_volume(0.1)
+                    Geratriz.exibir_fala(tela, falas_ativas.mostrar_fala(), fonte_Opc, falas_ativas.mostrar_posicao())
+                    jogo_bloqueado = True
+                else:
+                    pygame.mixer.music.set_volume(0.3)
+                    jogo_bloqueado = False
+
+                if jogo_bloqueado:
+                    pygame.display.flip()
+                    relogio.tick(60)
+                    continue
+                acertouprimeira = False
+                dados["acertouprimeira"] = acertouprimeira
+            elif primeira_vez_G:
+                falas_ativas = falas.cutscene_falas["glados1encontro"]
+                if evento.type == pygame.KEYDOWN:
+                    if evento.key == pygame.K_RETURN:
+                        if not falas_ativas.acabou() and tempo_atual - ultima_acao > delay:
+                            efeito_AVA.play()
+                            falas_ativas.proximo()
+                            ultima_acao = tempo_atual
+
+                if not falas_ativas.acabou():
+                    pygame.mixer.music.set_volume(0.1)
+                    Geratriz.exibir_fala(tela, falas_ativas.mostrar_fala(), fonte_Opc, falas_ativas.mostrar_posicao())
+                    jogo_bloqueado = True
+                else:
+                    pygame.mixer.music.set_volume(0.3)
+                    jogo_bloqueado = False
+
                 if jogo_bloqueado:
                     pygame.display.flip()
                     relogio.tick(60)
                     continue
                 primeira_vez_G = False
                 dados["primeira_vez_L"] = False
-                Utilitario.salvar_dados(dados, "Dados/pontuação.json")
-                
             Geratriz.gerar_dados(pontuação, num_Sala, Vida, tela, fonte_dados, dados.get("itens", {}).get("dica", 0), dados.get("itens", {}).get("booster", 0), personagem)
             if evento.type == pygame.KEYDOWN and evento.key == pygame.K_RETURN:
                 pygame.event.get(personagem.rect.x, personagem.rect.y)
