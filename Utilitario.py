@@ -1,9 +1,11 @@
 import os
 import random
 import json
+import pygame
 
+musica_atual = None
 class Utilitario:
-    
+
     @staticmethod
     def carregar_dados(Arquivo):
         if os.path.exists(Arquivo):
@@ -12,9 +14,9 @@ class Utilitario:
                     dados = json.load(f)
                     return dados
                 except ValueError:
-                    return {"pontuação": 0,"errouprimeira": True, "itens": {}, "primeira_vez_L": True}
+                    return {"pontuacao": 0,"errouprimeira": True, "itens": {}, "primeira_vez_L": True, "primeira_vez_G": True, "acertouprimeira": True, "desafioprimeira": True}
         else: 
-            return {"pontuação": 0,"errouprimeira": True, "itens": {}, "primeira_vez_L": True, "primeira_vez_G": True}
+            return {"pontuacao": 0,"errouprimeira": True, "itens": {}, "primeira_vez_L": True, "primeira_vez_G": True, "acertouprimeira": True, "desafioprimeira": True}
     
     @staticmethod
     def salvar_dados(dados, Arquivo):
@@ -152,5 +154,14 @@ class Utilitario:
     def efeito_vida(vida):
         vida += 1
         return vida
-        
+    
+    @staticmethod
+    def tocar_trilha_sonora(trilha):
+        global musica_atual
+        if musica_atual != trilha:
+            pygame.mixer.music.stop()
+            pygame.mixer.music.load(trilha)
+            pygame.mixer.music.play(-1)
+            pygame.mixer.music.set_volume(0.3)
+            musica_atual = trilha
         
