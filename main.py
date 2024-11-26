@@ -19,15 +19,26 @@ musica_atual = None
 class Sprite(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.sprites = [pygame.image.load(f'Sprites/robot{i}.png') for i in range(1,7)]
-        self.sprites_andando = [pygame.image.load(f'Sprites/personagem_andando{i}.png') for i in range(1,5)]
+        self.sprites = [pygame.image.load(f'Sprites/robotidle{i}.png') for i in range(1,11)]
+        self.sprites_andando = [pygame.image.load(f'Sprites/robotWalk{i}.png') for i in range(1,16)]
         self.sprites_vida = [pygame.image.load(f'Sprites/Vida{i}.png') for i in range(1, 7)]
         self.sprites_jogo = [pygame.image.load(f'Sprites/portasOverlay{i}.png') for i in range(1,4)]
         self.sprites_desafio = [pygame.image.load(f'Sprites/2portas{i}.png') for i in range(1,4)]
+        self.sprites_hud = [pygame.image.load(f'Sprites/ui{i}.png') for i in range(1,4)]
+        self.sprites_dialogo_AVA = [pygame.image.load(f'Sprites/AVAdiag{i}.png') for i in range(1,17)]
+        self.sprites_loja = [pygame.image.load(f'Sprites/ShopOverlay{i}.png') for i in range(1,7)]
+        self.sprites_lojista = [pygame.image.load(f'Sprites/eyes{i}.png') for i in range(1,11)]
+        self.sprites_dia_LOJ = [pygame.image.load(f'Sprites/ShopDiag{i}.png') for i in range(1,13)]
+
         self.atual_personagem = 0
         self.atual_jogo = 0
+        self.atual_hud = 0
+        self.atual_dia_AVA = 0
+        self.atual_dia_LOJ = 0
         self.tempo_anterior = time.time()
         self.delay_entre_frames = 0.1
+        self.atual_loja = 0
+        self.atual_lojista = 0
 
         self.image = self.sprites[self.atual_personagem]
         self.image = pygame.transform.scale(self.image, (28*3, 32*4))
@@ -105,8 +116,45 @@ class Sprite(pygame.sprite.Sprite):
         jogo_sprite = pygame.transform.scale(jogo_sprite, (1280, 720))
         tela.blit(jogo_sprite, (0, 0))
     
+    def desenhar_hud(self, tela):
+        self.atual_hud += 0.10
+        if self.atual_hud >= len(self.sprites_hud):
+            self.atual_hud = 0
+        hud_sprite = self.sprites_hud[int(self.atual_hud)]
+        tela.blit(hud_sprite,(25,25))
     
+    def desenhar_dialogo(self, tela, posicao, Tela_Loja, Tela_Jogo):
+        if Tela_Jogo:
+            self.atual_dia_AVA += 0.10
+            if self.atual_dia_AVA >= len(self.sprites_hud):
+                self.atual_dia_AVA = 0
+            dialogo_sprite = self.sprites_dialogo_AVA[int(self.atual_dia_AVA)]
+        elif Tela_Loja:
+            self.atual_dia_LOJ += 0.10
+            if self.atual_dia_LOJ >= len(self.sprites_dia_LOJ):
+                self.atual_dia_LOJ = 0
+            dialogo_sprite = self.sprites_dia_LOJ[int(self.atual_dia_LOJ)]
+        if posicao == "topo":
+            tela.blit(dialogo_sprite,(0,0))
+        elif posicao == "baixo":
+            tela.blit(dialogo_sprite,(0,400))
+        
+    def desenhar_loja(self,tela):
+        self.atual_loja += 0.1
+        if self.atual_loja >= len(self.sprites_loja):
+            self.atual_loja = 0
+        loja_sprite = self.sprites_loja[int(self.atual_loja)]
+        tela.blit(loja_sprite,(0,0))
+    
+    def desenhar_lojista(self,tela):
+        self.atual_lojista += 0.1
+        if self.atual_lojista >= len(self.sprites_lojista):
+            self.atual_lojista = 0
+        lojista_sprite = self.sprites_lojista[int(self.atual_lojista)]
+        lojista_sprite = pygame.transform.scale(lojista_sprite,(100, 100))
+        tela.blit(lojista_sprite,(528,382))
 
+    
 todas_as_sprites = pygame.sprite.Group()
 personagem = Sprite()
 todas_as_sprites.add(personagem)
@@ -135,10 +183,12 @@ fonte_nome = pygame.font.Font(fonte, 80)
 fonte_Opc = pygame.font.Font(fonte, 25)
 fonte_dados = pygame.font.Font(fonte, 20)
 fonte_desafios = pygame.font.Font(fonte, 15)
+fonte_derivada = pygame.font.Font(fonte, 10)
 relogio = pygame.time.Clock()
 
 pygame.display.set_caption("Prove IT")
 
+drive = pygame.image.load("Imagens/drive.png")
 logo = pygame.image.load("Imagens/Logo1.png")
 logo_R = pygame.transform.scale(logo, (600,140))
 background = pygame.image.load("Imagens/Tela_Fundo3.png")
@@ -147,6 +197,7 @@ background_jogo = pygame.image.load("Imagens/background.png")
 background_jogo = pygame.transform.scale(background_jogo, (1280,720))
 background_desafio = pygame.image.load("Imagens/2portasBackground.png")
 background_desafio = pygame.transform.scale(background_desafio, (1280,720))
+background_loja = pygame.image.load("Imagens/ShopBackground.png")
 Tela_Menu = True
 Tela_Loading = False
 Tela_Perdeu = False
@@ -154,8 +205,6 @@ Tela_Loja = False
 Tela_Ganhou = False
 questão_gerada = False
 Reiniciou = False
-r1, g1, b1 = 0, 0, 0
-r2, g2, b2 = 0, 0, 0
 teclas = None
 num_Sala = 1
 dica_jogo = False
@@ -170,6 +219,7 @@ primeira_vez_G = dados.get("primeira_vez_G", True)
 acertouprimeira = dados.get("acertouprimeira", True)
 desafioprimeira = dados.get("desafioprimeira", True)
 jogo_bloqueado = False
+dica_desafio = True
 while True:
     Vida = itens.get("vida", 0)
     tempo_atual = time.time()
@@ -199,13 +249,9 @@ while True:
                     else:
                         Tela_Loading = not Tela_Loading
                         Tela_Menu = False
-                elif (x_Arcd <= mouse_x <= x_Arcd + largura_Opc and y_Arcd <= mouse_y <= y_Arcd + altura_Opc):
-                    Utilitario.salvar_pontuação(pontuação, arquivo_pontuação)
-                    pygame.QUIT()
-                    sys.exit()
     if Tela_Loja:
         Utilitario.tocar_trilha_sonora(trilha_loja)
-        b_continuar, b_dica, b_vida, b_booster, tex_dica, tex_booster, tex_vida = Geratriz.Tela_Loja(tela,background,largura,fonte_Opc,todas_as_sprites,teclas)
+        b_continuar, b_dica, b_vida, b_booster, tex_dica, tex_booster, tex_vida = Geratriz.Tela_Loja(tela,background_loja,largura,fonte_Opc,todas_as_sprites,teclas, personagem)
         falas_ativas = falas.cutscene_falas["boas_vindasL"]
         if primeira_vez_L:
             if evento.type == pygame.KEYDOWN:
@@ -217,7 +263,7 @@ while True:
 
             if not falas_ativas.acabou():
                 pygame.mixer.music.set_volume(0.1)
-                Geratriz.exibir_fala(tela, falas_ativas.mostrar_fala(), fonte_Opc, falas_ativas.mostrar_posicao())
+                Geratriz.exibir_fala(tela, falas_ativas.mostrar_fala(), fonte_dados,personagem,Tela_Loja, Tela_Loading, falas_ativas.mostrar_posicao())
                 jogo_bloqueado = True
             else:
                 pygame.mixer.music.set_volume(0.3)
@@ -232,37 +278,39 @@ while True:
         Geratriz.gerar_dados(pontuação, num_Sala, Vida, tela, fonte_dados, dados.get("itens", {}).get("dica", 0), dados.get("itens", {}).get("booster", 0), personagem)
         if tex_dica.colliderect(personagem.rect):
             dica_info = "Dica, um otimo item para te ajudar na sua jornada.\nEste item te da uma dica de como resolver a questão"
-            dica_preco = f'30 Pontos'
-            como_usar = f'Aperte o botão 2 para usar a dica'
+            dica_preco = f'30'
+            como_usar = f'Dica, aperte 2 para usar'
             linhas = dica_info.split("\n")
-            y = 300
+            y = 330
             for linha in linhas:
-                dica_fonte, precod_fonte, fonte_usar = fonte_dados.render(linha, True, (0, 0, 0)), fonte_dados.render(dica_preco, True, (0,0,0)), fonte_dados.render(como_usar, True, (0,0,0))
-                tela.blit(dica_fonte, (300, y))
-                tela.blit(precod_fonte, (580, 360))
-                tela.blit(fonte_usar, (410, 450))
+                dica_fonte, precod_fonte, fonte_usar = fonte_derivada.render(linha, True, (0, 0, 0)), fonte_dados.render(dica_preco, True, (0,0,0)), fonte_desafios.render(como_usar, True, (0,0,0))
+                tela.blit(dica_fonte, (510, y))
+                tela.blit(precod_fonte, (740, 390))
+                tela.blit(fonte_usar, (570, 280))
                 y += 20
         elif tex_booster.colliderect(personagem.rect):
-            booster_info = "Booster, um item que te deixa ELETRIZANTE!!\nEle fará com que você passe de proxima fase sem dificuldade"
-            booster_preco = f'80 Pontos'
-            comob_usar = f'Aperte o botão 1 para usar a dica'
+            booster_info = "Booster, um item que te deixa ELETRIZANTE!! Ele fará\n com que você passe de proxima fase sem dificuldade"
+            booster_preco = f'80'
+            comob_usar = f'Booster, aperte 1 para usar'
             linhas = booster_info.split("\n")
-            y = 300
+            y = 330
             for linha in linhas:
-                booster_fonte, precob_fonte, comob_fonte = fonte_dados.render(linha, True, (0, 0, 0)), fonte_dados.render(booster_preco, True, (0,0,0)), fonte_dados.render(comob_usar, True,(0,0,0))
-                tela.blit(booster_fonte, (300, y))
-                tela.blit(precob_fonte, (580, 360))
-                tela.blit(comob_fonte, (410, 450))
+                booster_fonte, precob_fonte, comob_fonte = fonte_derivada.render(linha, True, (0, 0, 0)), fonte_dados.render(booster_preco, True, (0,0,0)), fonte_desafios.render(comob_usar, True,(0,0,0))
+                tela.blit(booster_fonte, (510, y))
+                tela.blit(precob_fonte, (740, 390))
+                tela.blit(comob_fonte, (570, 280))
                 y += 20
         elif tex_vida.colliderect(personagem.rect):
-            vida_info = "Vida, uma fonte incrivel de energia, ah como eu gosto dela...\nAumenta sua quantidade de vida, podendo errar mais questões"
-            vida_preco = f'100 Pontos'
+            vida_info = "Vida, uma fonte incrivel de energia.\nAumenta sua quantidade de vida. Vai aguentar mais!"
+            vida_preco = f'100'
+            vida_nome = f'Vida'
             linhas = vida_info.split("\n")
-            y = 300
+            y = 330
             for linha in linhas:
-                vida_fonte, precov_fonte = fonte_dados.render(linha, True, (0, 0, 0)), fonte_dados.render(vida_preco, True, (0,0,0))
-                tela.blit(vida_fonte, (270, y))
-                tela.blit(precov_fonte, (550, 360))
+                vida_fonte, precov_fonte, vida_fonte_nome = fonte_derivada.render(linha, True, (0, 0, 0)), fonte_dados.render(vida_preco, True, (0,0,0)), fonte_dados.render(vida_nome, True,(0,0,0))
+                tela.blit(vida_fonte, (510, y))
+                tela.blit(precov_fonte, (740, 390))
+                tela.blit(vida_fonte_nome, (680, 270))
                 y += 20
         if evento.type == pygame.KEYDOWN and evento.key == pygame.K_RETURN:
             if b_dica.colliderect(personagem.rect) and pontuação >= 30 and tempo_atual - ultima_acao > delay:
@@ -287,14 +335,16 @@ while True:
     if Tela_Loading:
         Utilitario.tocar_trilha_sonora(trilha_jogo)
         if num_Sala % 10 == 0 and Vida > 0:
+            dica_desafio = False
             if not questão_gerada or not Reiniciou:
                 personagem.rect.x = 50
                 personagem.rect.y = 550
+                t_sim, t_nao, pergunta_texto, resposta_correta = Utilitario.gerar_desafio(fonte_Opc)
                 #r1, g1, b1 = Utilitario.var_aleatoria(3,0,255)
                 #r2, g2, b2 = Utilitario.var_aleatoria(3,0,255)
                 questão_gerada = True
                 Reiniciou = True
-            porta_S, porta_N, respostas_d = Geratriz.gerar_desafio(fonte_desafios,tela,teclas,todas_as_sprites, fonte_Opc, background_desafio, personagem)
+            porta_S, porta_N, respostas_d = Geratriz.gerar_desafio(fonte_desafios,tela,teclas,todas_as_sprites, background_desafio, personagem,t_sim, t_nao, pergunta_texto, resposta_correta)
             if desafioprimeira:
                 falas_ativas = falas.cutscene_falas["saladesafio"]
                 if evento.type == pygame.KEYDOWN:
@@ -306,7 +356,7 @@ while True:
 
                 if not falas_ativas.acabou():
                     pygame.mixer.music.set_volume(0.1)
-                    Geratriz.exibir_fala(tela, falas_ativas.mostrar_fala(), fonte_Opc, falas_ativas.mostrar_posicao())
+                    Geratriz.exibir_fala(tela, falas_ativas.mostrar_fala(), fonte_dados, personagem,Tela_Loja, Tela_Loading, falas_ativas.mostrar_posicao())
                     jogo_bloqueado = True
                 else:
                     pygame.mixer.music.set_volume(0.3)
@@ -336,17 +386,19 @@ while True:
                     questão_gerada = False
                     pontuação += 35
                     dica_jogo = False
+                    dica_desafio = True
                 elif resultado == "perdeu":
                     num_Sala += 1
                     itens["vida"] -= 1
                     Vida -= 1
                     questão_gerada = False
                     dica_jogo = False
+                    dica_desafio = True
         elif num_Sala <= 100 and Vida > 0:
             if not questão_gerada or not Reiniciou:
                 personagem.rect.x = 50
                 personagem.rect.y = 550
-                questão, resposta, respostaf1, respostaf2, escolher, dica_t = Geratriz.gerar_questao(fonte_dados)
+                questão, resposta, respostaf1, respostaf2, escolher, dica = Geratriz.gerar_questao(fonte_desafios)
                 largura_quest, largura_text, largura_textF1, largura_textF2, text_quest, text_resV, text_resF1, text_resF2 = Geratriz.gerar_texto(questão, resposta, respostaf1, respostaf2, fonte_dados)
                 #r1, g1, b1 = Utilitario.var_aleatoria(3,0,255)
                 #r2, g2, b2 = Utilitario.var_aleatoria(3,0,255)
@@ -367,7 +419,7 @@ while True:
                     pygame.mixer.music.set_volume(0.1)
                     if falas_ativas.mostrar_index >= 3:
                         personagem.desenhar_vida(tela, Vida)
-                    Geratriz.exibir_fala(tela, falas_ativas.mostrar_fala(), fonte_Opc, falas_ativas.mostrar_posicao())
+                    Geratriz.exibir_fala(tela, falas_ativas.mostrar_fala(), fonte_dados,personagem,Tela_Loja, Tela_Loading, falas_ativas.mostrar_posicao())
                     jogo_bloqueado = True
                 else:
                     pygame.mixer.music.set_volume(0.3)
@@ -390,7 +442,9 @@ while True:
 
                 if not falas_ativas.acabou():
                     pygame.mixer.music.set_volume(0.1)
-                    Geratriz.exibir_fala(tela, falas_ativas.mostrar_fala(), fonte_Opc, falas_ativas.mostrar_posicao())
+                    if falas_ativas.mostrar_index >= 5:
+                        tela.blit(drive,(25,25))
+                    Geratriz.exibir_fala(tela, falas_ativas.mostrar_fala(), fonte_dados, personagem,Tela_Loja, Tela_Loading, falas_ativas.mostrar_posicao())
                     jogo_bloqueado = True
                 else:
                     pygame.mixer.music.set_volume(0.3)
@@ -413,7 +467,7 @@ while True:
 
                 if not falas_ativas.acabou():
                     pygame.mixer.music.set_volume(0.1)
-                    Geratriz.exibir_fala(tela, falas_ativas.mostrar_fala(), fonte_Opc, falas_ativas.mostrar_posicao())
+                    Geratriz.exibir_fala(tela, falas_ativas.mostrar_fala(), fonte_dados,personagem,Tela_Loja, Tela_Loading, falas_ativas.mostrar_posicao())
                     jogo_bloqueado = True
                 else:
                     pygame.mixer.music.set_volume(0.3)
@@ -477,18 +531,39 @@ while True:
                 dica_jogo = False
                 ultima_acao = tempo_atual
         elif keys[pygame.K_2] and tempo_atual - ultima_acao > delay:
-            if itens["dica"] >= 1:
-                itens["dica"] -= 1
-                dica_jogo = True
-                ultima_acao = tempo_atual
+            if dica_desafio:
+                if itens["dica"] >= 1:
+                    itens["dica"] -= 1
+                    dica_jogo = True
+                    ultima_acao = tempo_atual
         if dica_jogo:
             if escolher == 'Linear':
-                tela.blit(dica_t,(250,330))
+                tela.blit(dica,(380,220))
             elif escolher == 'Divisão':
-                tela.blit(dica_t,(250,330))
+                tela.blit(dica,(380,220))
             elif escolher == "Quadratica":
-                tela.blit(dica_t,(150,330))
-
+                linhas = dica.split("\n")
+                y = 220
+                for linha in linhas:
+                    dica_pergunta = fonte_desafios.render(linha, True, (0, 0, 0))
+                    tela.blit(dica_pergunta,(380, y))
+                    y += 20
+            elif escolher == "Comparação":
+                tela.blit(dica,(380,220))
+            elif escolher == "Modular":
+                linhas = dica.split("\n")
+                y = 220
+                for linha in linhas:
+                    dica_pergunta = fonte_desafios.render(linha, True, (0, 0, 0))
+                    tela.blit(dica_pergunta,(380, y))
+                    y += 20
+            elif escolher == "Trigonometrica":
+                linhas = dica.split("\n")
+                y = 220
+                for linha in linhas:
+                    dica_pergunta = fonte_desafios.render(linha, True, (0, 0, 0))
+                    tela.blit(dica_pergunta,(380, y))
+                    y += 20
         elif num_Sala == 101 and Vida > 0:
             Tela_Ganhou = not Tela_Ganhou
             Tela_Loading = not Tela_Loading
@@ -499,6 +574,7 @@ while True:
             Tela_Loading = not Tela_Loading
             dica_jogo = False
     if Tela_Ganhou:
+        pygame.mixer.music.stop()
         botao_inicial_G = Geratriz.Tela_Ganhou(tela, background, fonte_Opc)
         if evento.type == pygame.MOUSEBUTTONDOWN:
             if evento.button == 1:
@@ -514,6 +590,7 @@ while True:
                     Tela_Loja = False
                     dica_jogo = False
     if Tela_Perdeu:
+        pygame.mixer.music.stop()
         botao_inicial_P, botao_reiniciar = Geratriz.tela_perdeu(tela, background, largura, fonte_Opc)
         if evento.type == pygame.MOUSEBUTTONDOWN:
             if evento.button == 1:
