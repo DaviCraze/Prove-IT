@@ -5,82 +5,48 @@ class Geratriz:
     
     @staticmethod
     def gerar_questao(fonte_dados):
-        tipos_questoes = ['Linear', 'Divisão', 'Quadratica']
+        tipos_questoes = ['Linear', 'Divisão', 'Quadratica', 'Comparação', 'Modular','Trigonometrica']
         escolher = random.choice(tipos_questoes)
         questao, resposta = None, None
         falsa1, falsa2 = None, None
         if escolher == 'Linear':
-            questao, resposta, falsa1, falsa2, dica_t = Utilitario.Quest_Linear(fonte_dados)
+            questao, resposta, falsa1, falsa2, dica_t = Questoes.Quest_Linear(fonte_dados)
             return questao, resposta, falsa1, falsa2, escolher, dica_t
         elif escolher == 'Divisão':
-            questao, resposta, falsa1, falsa2, dica_t = Utilitario.Quest_Divisao(fonte_dados)
+            questao, resposta, falsa1, falsa2, dica_t = Questoes.Quest_Divisao(fonte_dados)
             return questao, resposta, falsa1, falsa2, escolher, dica_t
         elif escolher == 'Quadratica':
-            questao, resposta, falsa1, falsa2, dica_t = Utilitario.Quest_Quadratica(fonte_dados)
+            questao, resposta, falsa1, falsa2, dica_t = Questoes.Quest_Quadratica(fonte_dados)
             return questao, resposta, falsa1, falsa2, escolher, dica_t
-        else:
-            questao, resposta, falsa1, falsa2 = Utilitario.Quest_Comparacao
+        elif escolher == 'Comparação':
+            questao, resposta, falsa1, falsa2, dica_t = Questoes.Quest_Comparacao(fonte_dados)
             return questao, resposta, falsa1, falsa2, escolher, dica_t
+        elif escolher == 'Modular':
+            questao, resposta, falsa1, falsa2, dica_t = Questoes.Quest_Modular(fonte_dados)
+            return questao, resposta, falsa1, falsa2, escolher, dica_t
+        elif escolher == 'Trigonometrica':
+            questao, resposta, falsa1, falsa2, dica_t = Questoes.Quest_Trigonometrica(fonte_dados)
+            return questao, resposta, falsa1, falsa2, escolher, dica_t
+        '''elif escolher == 'Derivada':
+            questao, resposta, falsa1, falsa2, dica_t = Questoes.Quest_Derivada(fonte_derivada)
+            return questao, resposta, falsa1, falsa2, escolher, dica_t'''
     
     @staticmethod
-    def exibir_fala(tela, fala_atual, fonte, posicao="topo"):
+    def exibir_fala(tela, fala_atual, fonte, personagem,Tela_Loja, Tela_Jogo,posicao="topo"):
         if fala_atual:
-            if posicao == "topo":
-                dialogoP = (50, 50, 1180, 200)
-                dialogoB = (60, 60, 1160, 180)
-                texto_y = 70
-            elif posicao == "baixo":
-                dialogoP = (50, 500, 1180, 200)
-                dialogoB = (60, 510, 1160, 180)
-                texto_y = 520
-
-            pygame.draw.rect(tela, (0,0,0),dialogoP)
-            pygame.draw.rect(tela, (255,255,255),dialogoB)
-
+            personagem.desenhar_dialogo(tela,posicao, Tela_Loja, Tela_Jogo)
             linhas = fala_atual.split("\n")
+            if posicao == "topo":
+                texto_y = 100
+            elif posicao == "baixo":
+                texto_y = 500
             for linha in linhas:
                 fala_texto = fonte.render(linha, True,(0,0,0))
-                tela.blit(fala_texto, (70, texto_y))
+                tela.blit(fala_texto, (370, texto_y))
                 texto_y += 30
 
     @staticmethod
-    def gerar_desafio(fonte_desafios,tela,teclas,todas_as_sprites, fonte, background,personagem):
-        tipos_desafio = [
-            {"Pergunta": "Sejam p e q proposições, tais que p: “minha caneta é roxa”\ne q: “meu caderno é azul”. A expressão logica equivalente a\n“se minha caneta é roxa então meu caderno nao é azul” é p→ ¬ q?", "resposta": "sim"},
-            {"Pergunta": "Quanto as derivadas de uma função, a primeira derivada denuncia\ncurvatura e concavidade da função, enquanto a segunda\n diz respeito a decrescimento/crescimento.", "resposta": "nao"},
-            {"Pergunta": "Os conceitos originados na trigonometria, chamados de cosseno e\nseno são conceitos universais no nível de poderem ser\n aplicados em praticamnte qualquer área da matemática.", "resposta": "sim"},
-            {"Pergunta": "Séries são conceitos matemáticos fundamentais para áreas como\n física, engenharia, cálculo, entre outras áreas.", "resposta": "sim"},
-            {"Pergunta": "O Teorema Fundamental do Cálculo junta conceitos de integral,\nlimite, derivada para provar que uma função, mesmo que\ndescontínua, tem uma integral definida existente.", "resposta": "nao"},
-            {"Pergunta": "Infinito é um conceito bem variado e que se estende para várias\naplicações, é possível que um infinito seja “menor” que outro?", "resposta": "sim"},
-            {"Pergunta": "Algoritmos recorrentes são conceitos geralmente usados, na\n matemática existem conceitos análogos de recorrências, \ncomo: Fatorial e Número de ouro.", "resposta": "sim"},
-            {"Pergunta": "Sejam x e y pertencentes a N respectivamente um número par\ne um número ímpar a multiplicação desse dois números dará\nsempre um par?", "resposta": "sim"},
-            {"Pergunta": "O Teorema de Pitágoras cria uma relação entre geometria básica\ncomo triângulos retângulos com análise estatística?", "resposta": "nao"},
-            {"Pergunta": "A soma de 2 números naturais a e b repectivamente par e ímpar\nsempre será ímpar e igual a um número natural par qualquer\nc mais 1.", "resposta": "sim"},
-            {"Pergunta": "Programas que usam tratamento de imagem para edição entre outras\ncoisas usam muito aplicações diferenciais focando em\nresultados exatos eque modelam fenômenos.", "resposta": "nao"},
-            {"Pergunta": "Problemas numéricos trabalham com aproximações e erros, um\nerro de 1e-20(10^-20) é considerado insignificante na maioria\ndas aplicações numéricas?", "resposta": "sim"},
-            {"Pergunta": "A definição ou a fórmula de Euler é central para a matemática\ne encapsula conceitos extremamente importantes como o\ndesvio padrão, o 0, o 1 e a constante euler.", "resposta": "nao"},
-            {"Pergunta": "Probabilidade e Estatística são bem usadas na previsão de\ncomportamento em áreas variadas, como química, estudo demográfico,\nanálise econômica, engenharia, etc.", "resposta": "sim"},
-            {"Pergunta": "A linearidade de funções facilita o estudo e o processamento\nde resultados, principalmente quando se fala em áreas como\ncalculo numérico e análise de sistemas.", "resposta": "sim"},
-            {"Pergunta": "A trigonometria consegue ter ligação direta com conceitos como\nconjuntos, principalmente quando se fala em reais/complexos,\nindispensáveis na explicação de periodicidade e continuidade.", "resposta": "sim"},
-            {"Pergunta": "Matemática discreta toma um papel extremamente importante no\nentendimento do raciocínio por trás de logaritmos computacionais,\nalém de preparar para matérias como Análise.", "resposta": "nao"},
-            {"Pergunta": "Um limite não retorna um resultado e sim um comportamento, assim\ncomo integrais retornam uma área e uma assinatura.", "resposta": "nao"},
-            {"Pergunta": "Um conjunto contínuo só em um intervalo, sendo diferencial neste\nintervalo, e limitado pode admitir integrais e derivadas?", "resposta": "sim"},
-            {"Pergunta": "Uma boa forma de calcular constantes como a de euler, pi, ou\nfunções como seno e cosseno é com o uso de séries, como a harmônica.", "resposta": "nao"},
-            {"Pergunta": "Convergência e divergência são bem aplicados em séries,\nanalogamente em integrais devido ao sua natureza somatória, a\npartir disso toda integral é convergente?", "resposta": "nao"},
-            {"Pergunta": "A utilização de matrizes é uma maneira eficiente e eficaz\nde resolver muitos problemas numéricos, principalmente com\nsistema lineares.", "resposta": "sim"},
-            {"Pergunta": "Em um grafo completo, todos os vértices estão conectados\npor uma aresta.", "resposta": "nao"},
-            {"Pergunta": "O Teorema dos Primos em Progressões aritméticas assume que\nexistem infinitos números primos na forma 2n+1.", "resposta": "nao"},
-            {"Pergunta": "A ordenação é uma das áreas mais estudadas em questão de\nalgortimos e complexidade, em busca de tornar mais rápido o processo,\nmas o mais rápido possível até hoje é O(nlogn) em casos isolados.", "resposta": "nao"},
-            {"Pergunta": "A indução matemática é um método válido para provar afirmações\nsobre números naturais e inteiros.", "resposta": "nao"}
-        ]
-        sim = f'Sim'
-        nao = f'Não'
-        t_sim = fonte.render(sim, True, (0, 0, 0))
-        t_nao = fonte.render(nao, True, (0, 0, 0))
-        random.shuffle(tipos_desafio)
-        pergunta_atual = tipos_desafio.pop(0)
-        pergunta_texto = pergunta_atual["Pergunta"]
-        resposta_correta = pergunta_atual["resposta"]
+    def gerar_desafio(fonte_desafios,tela,teclas,todas_as_sprites, background,personagem,t_sim, t_nao, pergunta_texto, resposta_correta ):
         pygame.draw.rect(tela, (0, 0, 0), (470, 397, 150, 250))
         porta_S = pygame.draw.rect(tela, (255, 255, 255), (470 + 13, 407, 125 , 240))
         pygame.draw.rect(tela, (0, 0, 0), (880, 397, 250 , 250))
@@ -125,7 +91,6 @@ class Geratriz:
         tela.blit(logo, (340, 100))
 
         pygame.draw.rect(tela, (0, 0, 0), (x_Hist, y_Hist, largura_Opc, altura_Opc))
-        pygame.draw.rect(tela, (0, 0, 0), (x_Arcd, y_Arcd, largura_Opc, altura_Opc))
 
         #tela.blit(texto_jogo, (420, altura - 600))
         tela.blit(texto_Hist, (x_Hist + 2, y_Hist + 10))
@@ -213,12 +178,6 @@ class Geratriz:
         tela.blit(text_reiniciar, (largura/1.92 - 250, 370))
         
         return botao_inicial_P, botao_reiniciar
-        
-    @staticmethod
-    def gerar_fundo(tela, r1, g1, b1, r2, g2, b2):
-        
-        pygame.draw.rect(tela, (r1, g1, b1), (0, 640, 1280, 88))
-        pygame.draw.rect(tela, (r2, g2, b2), (0, 0, 1280, 640))
     
     @staticmethod
     def Tela_Ganhou(tela, background, fonte_Opc):
@@ -239,37 +198,35 @@ class Geratriz:
 
         return botao_inicial_G
     @staticmethod
-    def Tela_Loja(tela, background, largura, fonte_Opc, todas_as_sprites, teclas):
-        tela.blit(background, (0,0))
+    def Tela_Loja(tela, background, largura, fonte_Opc, todas_as_sprites, teclas,personagem):
         Loja, Booster, Dica, Vida, Continuar = f'Loja de Itens', f'Booster', f'Dica', f'Vida', f'Continuar'
         t_loja, t_booster, t_dica, t_vida, t_continuar = fonte_Opc.render(Loja, True, (0, 0, 0)), fonte_Opc.render(Booster, True, (0, 0, 0)), fonte_Opc.render(Dica, True, (0, 0, 0)), fonte_Opc.render(Vida, True, (0, 0, 0)), fonte_Opc.render(Continuar, True, (0, 0, 0))
-        (largura_loja, altura_loja), (largura_booster, altura_booster), (largura_dica, altura_dica), (largura_vida, altura_vida), (largura_continuar, altura_continuar) = t_loja.get_size(), t_booster.get_size(), t_dica.get_size(), t_vida.get_size(), t_continuar.get_size()      
-        b_continuar = pygame.draw.rect(tela,(255,255,255), (1050, 563, largura_continuar+40, altura_continuar+100))
-        pygame.draw.rect(tela,(135, 135, 135), (0, 0, largura, 720))
-        pygame.draw.rect(tela,(221, 75, 23), (0, 640, largura, 88))
-        pygame.draw.rect(tela,(0, 0, 255), (0, 540, largura, 100))
-        pygame.draw.rect(tela,(0, 0, 0), (0, 535, largura, 10))
-        pygame.draw.rect(tela,(0, 0, 0), (0, 635, largura, 10))
-        b_booster = pygame.draw.rect(tela,(255,255,255), (52, 570, largura_booster+40, altura_booster+10))
-        b_dica = pygame.draw.rect(tela,(255,255,255), (300, 570, largura_booster+40, altura_booster+10))
-        b_vida = pygame.draw.rect(tela,(255,255,255), (548, 570, largura_booster+40, altura_booster+10))
-        pygame.draw.rect(tela,(255,255,255), (1050, 570, largura_continuar+40, altura_continuar+10))
-        tex_booster = tela.blit(t_booster, (75, 575))
+        #(largura_loja, altura_loja), (largura_booster, altura_booster), (largura_dica, altura_dica), (largura_vida, altura_vida), (largura_continuar, altura_continuar) = t_loja.get_size(), t_booster.get_size(), t_dica.get_size(), t_vida.get_size(), t_continuar.get_size()      
+        b_continuar = pygame.draw.rect(tela,(255,255,255), (1050, 563, 200, 100))
+        b_booster = pygame.draw.rect(tela,(255,255,255), (670, 570, 150, 100))
+        b_dica = pygame.draw.rect(tela,(255,255,255), (150, 570, 100, 100))
+        b_vida = pygame.draw.rect(tela,(255,255,255), (350, 570, 100, 100))
+        #pygame.draw.rect(tela,(255,255,255), (1050, 570, largura_continuar+40, altura_continuar+10))
+        tex_booster = tela.blit(t_booster, (700, 575))
         tela.blit(t_loja, (largura/2.5, 100))
         tela.blit(t_continuar, (1070, 575))
-        tex_dica = tela.blit(t_dica, (345, 575))
-        tex_vida = tela.blit(t_vida, (595, 575))
+        tex_dica = tela.blit(t_dica, (150, 575))
+        tex_vida = tela.blit(t_vida, (370, 575))
+
+        tela.blit(background, (0,0))
+        personagem.desenhar_loja(tela)
+        personagem.desenhar_lojista(tela)
 
         todas_as_sprites.draw(tela)
         todas_as_sprites.update(teclas)
         return b_continuar, b_dica, b_vida, b_booster, tex_dica, tex_booster, tex_vida
     @staticmethod
     def gerar_dados(pontuação, num_Sala, Vida, tela, fonte_dados, dica, booster, personagem):
-        ponto_texto, vida_texto, sala_texto, dica_texto, booster_texto = f'Pontos = {pontuação}', f'Vida = {Vida}', f'Nº {num_Sala}', f'Dicas = {dica}', f'Boosters = {booster}'
-        ponto_fonte, vida_fonte, sala_fonte, dica_fonte, booster_fonte = fonte_dados.render(ponto_texto, True, (0, 0, 0)), fonte_dados.render(vida_texto, True, (0, 0, 0)), fonte_dados.render(sala_texto, True, (0, 0, 0)), fonte_dados.render(dica_texto, True, (0, 0, 0)), fonte_dados.render(booster_texto, True, (0, 0, 0))
-        tela.blit(ponto_fonte, (20, 30))
-        tela.blit(vida_fonte, (20, 65))
+        ponto_texto, sala_texto, dica_texto, booster_texto = f'{pontuação}', f'Nº {num_Sala}', f'{dica}', f'{booster}'
+        ponto_fonte, sala_fonte, dica_fonte, booster_fonte = fonte_dados.render(ponto_texto, True, (255, 255, 255)), fonte_dados.render(sala_texto, True, (255, 255, 255)), fonte_dados.render(dica_texto, True, (255, 255, 255)), fonte_dados.render(booster_texto, True, (255, 255, 255))
+        tela.blit(ponto_fonte, (70, 40))
         tela.blit(sala_fonte, (1180, 30))
-        tela.blit(dica_fonte, (20, 100))
-        tela.blit(booster_fonte, (20, 135))
+        tela.blit(dica_fonte, (95, 120))
+        tela.blit(booster_fonte, (113, 185))
         personagem.desenhar_vida(tela, Vida)
+        personagem.desenhar_hud(tela)
