@@ -49,7 +49,7 @@ class Questoes:
     
     @staticmethod
     def Quest_Quadratica(fonte_dados):
-        dica = f"Que tal focar no primeiro valor e no segundo valor? Talvez isso te ajude!"
+        dica = f"Que tal focar no primeiro valor e no segundo valor?\nTalvez isso te ajude!"
         dica_t = fonte_dados.render(dica, True, (0,0,0))
         a,b = Utilitario.var_aleatoria(2,1,9)
         questão = f'{a ** 2}x² + {2 * a * b}x + {b ** 2}'
@@ -64,7 +64,7 @@ class Questoes:
         while respostaf2 == resposta or respostaf2 == respostaf1:
             e, f = Utilitario.var_aleatoria(2,1,9)
             respostaf2 = f'({e}x + {f})²'
-        return questão, resposta, respostaf1, respostaf2, dica_t
+        return questão, resposta, respostaf1, respostaf2, dica
     
     @staticmethod
     def Quest_Comparacao(fonte_dados):
@@ -102,7 +102,7 @@ class Questoes:
     
     @staticmethod
     def Quest_Modular(fonte_dados):
-        dica = f"Lembra que é um módulo, ou seja, 2 formas de resolver, mas aqui \nbasta saber 1 das formas!"
+        dica = f"Lembra que é um módulo, ou seja, 2 formas de resolver, mas aqui\nbasta saber 1 das formas!"
         dica_t = fonte_dados.render(dica, True, (0, 0, 0))
 
         a, b = Utilitario.var_aleatoria(2, 1, 9)
@@ -112,21 +112,21 @@ class Questoes:
         resposta1 = f"x = {(-b + c) / a:.2f}"
         resposta2 = f"x = {(-b - c) / a:.2f}"
 
-        resposta = resposta1 if Utilitario.var_aleatoria(1, 0, 1)[0] == 0 else resposta2
+        resposta = resposta1 if Utilitario.var_aleatoria(1, 0, 1) == 0 else resposta2
 
-        d, e = Utilitario.var_aleatoria(2, -9, 9)
+        d, e = Utilitario.var_aleatoria(2, 1, 9)
         respostaf1 = f"x = {d / e:.2f}"
         while respostaf1 == resposta1 or respostaf1 == resposta2:
-            d, e = Utilitario.var_aleatoria(2, -9, 9)
+            d, e = Utilitario.var_aleatoria(2, 1, 9)
             respostaf1 = f"x = {d / e:.2f}"
 
-        f, g = Utilitario.var_aleatoria(2, -9, 9)
+        f, g = Utilitario.var_aleatoria(2, 1, 9)
         respostaf2 = f"x = {f / g:.2f}"
         while respostaf2 == resposta1 or respostaf2 == resposta2 or respostaf2 == respostaf1:
-            f, g = Utilitario.var_aleatoria(2, -9, 9)
+            f, g = Utilitario.var_aleatoria(2, 1, 9)
             respostaf2 = f"x = {f / g:.2f}"
 
-        return questão, resposta, respostaf1, respostaf2, dica_t
+        return questão, resposta, respostaf1, respostaf2, dica
 
     @staticmethod
     def Quest_Trigonometrica(fonte_dados):
@@ -141,34 +141,34 @@ class Questoes:
         questão = f"{função}(x) = {valor}, 0° ≤ x ≤ 360°"
 
         if função == 'sin':
-            resposta = f"x = {angulo}° ou x = {180 - angulo}°"
+            resposta = f"x = {angulo}°"
         elif função == 'cos':
-            resposta = f"x = {angulo}° ou x = {360 - angulo}°"
+            resposta = f"x = {angulo}°"
         else:  
             resposta = f"x = {angulo}°"
 
-        respostaf1 = f"x = {angulo + random.randint(10, 90)}° ou x = {180 - angulo - random.randint(10, 90)}°"
-        respostaf2 = f"x = {random.randint(0, 360)}° ou x = {random.randint(0, 360)}°"
+        respostaf1 = f"x = {angulo + random.randint(10, 90)}°"
+        respostaf2 = f"x = {random.randint(0, 360)}°"
 
         while respostaf1 == resposta or respostaf2 == resposta or respostaf1 == respostaf2:
-            respostaf1 = f"x = {angulo + random.randint(10, 90)}° ou x = {180 - angulo - random.randint(10, 90)}°"
-            respostaf2 = f"x = {random.randint(0, 360)}° ou x = {random.randint(0, 360)}°"
+            respostaf1 = f"x = {angulo + random.randint(10, 90)}°"
+            respostaf2 = f"x = {random.randint(0, 360)}°"
 
-        dica = f"Claro, a querida trigonometria, a função é {função}, \ncomo ela funciona no circulo trigonométrico?"
+        dica = f"Claro, a querida trigonometria, a função é {função},\ncomo ela funciona no circulo trigonométrico?"
         dica_t = fonte_dados.render(dica, True, (0, 0, 0))
 
-        return questão, resposta, respostaf1, respostaf2, dica_t
+        return questão, resposta, respostaf1, respostaf2, dica
 
     @staticmethod
     def Quest_Derivada(fonte_dados):
         dica = (
-            "Lembra que caso tenha trigonometria, 1 delas inverte, \na exponecial quase sempre é ela mesma, uma fração \nsegue a regra do quociente, você consegue..."
+            "Lembra que caso tenha trigonometria, 1 delas inverte,\na exponecial quase sempre é ela mesma, uma fração\nsegue a regra do quociente, você consegue..."
         )
         dica_t = fonte_dados.render(dica, True, (0, 0, 0))
 
         x = symbols('x')
 
-        escolha = Utilitario.var_aleatoria(1, 1, 4)[0]
+        escolha = Utilitario.var_aleatoria(1, 1, 4)
         a, b = Utilitario.var_aleatoria(2, -5, 5)
         
         while a == 0 and b == 0:
@@ -188,19 +188,17 @@ class Questoes:
         c = Utilitario.var_aleatoria(1, -5, 5)
         
         respostaf1 = diff(func + c*x, x)
-        respostaf2 = derivada_correta * Utilitario.var_aleatoria(1, 2, 3)[0]
+        respostaf2 = derivada_correta * Utilitario.var_aleatoria(1, 2, 3)
 
         while respostaf1 == derivada_correta or respostaf2 == derivada_correta or respostaf1 == respostaf2:
             c = Utilitario.var_aleatoria(1, -5, 5)
             
             respostaf1 = diff(func + c*x, x)
-            respostaf2 = derivada_correta * Utilitario.var_aleatoria(1, 2, 3)[0]
+            respostaf2 = derivada_correta * Utilitario.var_aleatoria(1, 2, 3)
 
         questão = f"f(x) = {func}, f'(x) = ?"
         resposta = f"{derivada_correta}"
         respostaf1 = f"{respostaf1}"
         respostaf2 = f"{respostaf2}"
 
-        return questão, resposta, respostaf1, respostaf2, dica_t
-
-
+        return questão, resposta, respostaf1, respostaf2, dica
