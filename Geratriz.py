@@ -1,5 +1,5 @@
 import pygame
-from Utilitario import *
+from Questoes import *
 
 class Geratriz:
     
