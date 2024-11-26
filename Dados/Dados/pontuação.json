@@ -1,0 +1,13 @@
+{
+    "pontuacao": 43,
+    "itens": {
+        "booster": 62,
+        "dica": 241,
+        "vida": 3
+    },
+    "primeira_vez_L": false,
+    "primeira_vez_G": false,
+    "errouprimeira": false,
+    "acertouprimeira": false,
+    "desafioprimeira": false
+}

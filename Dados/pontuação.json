@@ -1,0 +1,11 @@
+{
+    "pontuacao": 4,
+    "itens": {
+        "vida": 3
+    },
+    "primeira_vez_L": true,
+    "primeira_vez_G": false,
+    "errouprimeira": false,
+    "acertouprimeira": false,
+    "desafioprimeira": true
+}

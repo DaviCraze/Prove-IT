@@ -9,13 +9,13 @@ class Falas:
     
     def mostrar_fala(self):
         if self.index < len(self.falas):
-            return f"{self.falas[self.index]["texto"]}"
+            return f"{self.falas[self.index]['texto']}"
         else:
             return ""
     
     def mostrar_posicao(self):
         if self.index < len(self.falas):
-            return f"{self.falas[self.index]["posicao"]}"
+            return f"{self.falas[self.index]['posicao']}"
         else:
             return "topo"
 

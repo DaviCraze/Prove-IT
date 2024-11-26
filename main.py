@@ -8,27 +8,27 @@ import time
 pygame.init()
 
 pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=512)
-efeito_acerto = pygame.mixer.Sound("Musicas/acerto.wav")
-efeito_erro = pygame.mixer.Sound("Musicas/erro.wav")
-efeito_AVA = pygame.mixer.Sound("Musicas/AVA.wav")
-efeito_LOJISTA = pygame.mixer.Sound("Musicas/LOJISTA.wav")
-arquivo_pontuação = "Dados/pontuação.json"
-trilha_loja = "Musicas/Loja.mp3"
-trilha_jogo = "Musicas/Jogo.mp3"
+efeito_acerto = pygame.mixer.Sound("Musicas/Musicas/acerto.wav")
+efeito_erro = pygame.mixer.Sound("Musicas/Musicas/erro.wav")
+efeito_AVA = pygame.mixer.Sound("Musicas/Musicas/AVA.wav")
+efeito_LOJISTA = pygame.mixer.Sound("Musicas/Musicas/LOJISTA.wav")
+arquivo_pontuação = "Dados/Dados/pontuação.json"
+trilha_loja = "Musicas/Musicas/Loja.mp3"
+trilha_jogo = "Musicas/Musicas/Jogo.mp3"
 musica_atual = None
 class Sprite(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.sprites = [pygame.image.load(f'Sprites/robotidle{i}.png') for i in range(1,11)]
-        self.sprites_andando = [pygame.image.load(f'Sprites/robotWalk{i}.png') for i in range(1,16)]
-        self.sprites_vida = [pygame.image.load(f'Sprites/Vida{i}.png') for i in range(1, 7)]
-        self.sprites_jogo = [pygame.image.load(f'Sprites/portasOverlay{i}.png') for i in range(1,4)]
-        self.sprites_desafio = [pygame.image.load(f'Sprites/2portas{i}.png') for i in range(1,4)]
-        self.sprites_hud = [pygame.image.load(f'Sprites/ui{i}.png') for i in range(1,4)]
-        self.sprites_dialogo_AVA = [pygame.image.load(f'Sprites/AVAdiag{i}.png') for i in range(1,17)]
-        self.sprites_loja = [pygame.image.load(f'Sprites/ShopOverlay{i}.png') for i in range(1,7)]
-        self.sprites_lojista = [pygame.image.load(f'Sprites/eyes{i}.png') for i in range(1,11)]
-        self.sprites_dia_LOJ = [pygame.image.load(f'Sprites/ShopDiag{i}.png') for i in range(1,13)]
+        self.sprites = [pygame.image.load(f'Sprites/Sprites/robotidle{i}.png') for i in range(1,11)]
+        self.sprites_andando = [pygame.image.load(f'Sprites/Sprites/robotWalk{i}.png') for i in range(1,16)]
+        self.sprites_vida = [pygame.image.load(f'Sprites/Sprites/Vida{i}.png') for i in range(1, 7)]
+        self.sprites_jogo = [pygame.image.load(f'Sprites/Sprites/portasOverlay{i}.png') for i in range(1,4)]
+        self.sprites_desafio = [pygame.image.load(f'Sprites/Sprites/2portas{i}.png') for i in range(1,4)]
+        self.sprites_hud = [pygame.image.load(f'Sprites/Sprites/ui{i}.png') for i in range(1,4)]
+        self.sprites_dialogo_AVA = [pygame.image.load(f'Sprites/Sprites/AVAdiag{i}.png') for i in range(1,17)]
+        self.sprites_loja = [pygame.image.load(f'Sprites/Sprites/ShopOverlay{i}.png') for i in range(1,7)]
+        self.sprites_lojista = [pygame.image.load(f'Sprites/Sprites/eyes{i}.png') for i in range(1,11)]
+        self.sprites_dia_LOJ = [pygame.image.load(f'Sprites/Sprites/ShopDiag{i}.png') for i in range(1,13)]
 
         self.atual_personagem = 0
         self.atual_jogo = 0
@@ -188,16 +188,16 @@ relogio = pygame.time.Clock()
 
 pygame.display.set_caption("Prove IT")
 
-drive = pygame.image.load("Imagens/drive.png")
-logo = pygame.image.load("Imagens/Logo1.png")
+drive = pygame.image.load("Imagens/Imagens/drive.png")
+logo = pygame.image.load("Imagens/Imagens/Logo1.png")
 logo_R = pygame.transform.scale(logo, (600,140))
-background = pygame.image.load("Imagens/Tela_Fundo3.png")
+background = pygame.image.load("Imagens/Imagens/Tela_Fundo3.png")
 background = pygame.transform.smoothscale(background, (1280, 720))
-background_jogo = pygame.image.load("Imagens/background.png")
+background_jogo = pygame.image.load("Imagens/Imagens/background.png")
 background_jogo = pygame.transform.scale(background_jogo, (1280,720))
-background_desafio = pygame.image.load("Imagens/2portasBackground.png")
+background_desafio = pygame.image.load("Imagens/Imagens/2portasBackground.png")
 background_desafio = pygame.transform.scale(background_desafio, (1280,720))
-background_loja = pygame.image.load("Imagens/ShopBackground.png")
+background_loja = pygame.image.load("Imagens/Imagens/ShopBackground.png")
 Tela_Menu = True
 Tela_Loading = False
 Tela_Perdeu = False
