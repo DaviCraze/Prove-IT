@@ -46,7 +46,32 @@ class Geratriz:
     @staticmethod
     def gerar_desafio(fonte_desafios,tela,teclas,todas_as_sprites, fonte, background,personagem):
         tipos_desafio = [
-            {"Pergunta": "Sejam p e q proposições, tais que p: “minha caneta é roxa”\ne q: “meu caderno é azul”. A expressão logica equivalente a\n“se minha caneta é roxa então meu caderno nao é azul” é p→ ¬ q?", "resposta": "sim"}
+            {"Pergunta": "Sejam p e q proposições, tais que p: “minha caneta é roxa”\ne q: “meu caderno é azul”. A expressão logica equivalente a\n“se minha caneta é roxa então meu caderno nao é azul” é p→ ¬ q?", "resposta": "sim"},
+            {"Pergunta": "Quanto as derivadas de uma função, a primeira derivada denuncia\ncurvatura e concavidade da função, enquanto a segunda\n diz respeito a decrescimento/crescimento.", "resposta": "nao"},
+            {"Pergunta": "Os conceitos originados na trigonometria, chamados de cosseno e\nseno são conceitos universais no nível de poderem ser\n aplicados em praticamnte qualquer área da matemática.", "resposta": "sim"},
+            {"Pergunta": "Séries são conceitos matemáticos fundamentais para áreas como\n física, engenharia, cálculo, entre outras áreas.", "resposta": "sim"},
+            {"Pergunta": "O Teorema Fundamental do Cálculo junta conceitos de integral,\nlimite, derivada para provar que uma função, mesmo que\ndescontínua, tem uma integral definida existente.", "resposta": "nao"},
+            {"Pergunta": "Infinito é um conceito bem variado e que se estende para várias\naplicações, é possível que um infinito seja “menor” que outro?", "resposta": "sim"},
+            {"Pergunta": "Algoritmos recorrentes são conceitos geralmente usados, na\n matemática existem conceitos análogos de recorrências, \ncomo: Fatorial e Número de ouro.", "resposta": "sim"},
+            {"Pergunta": "Sejam x e y pertencentes a N respectivamente um número par\ne um número ímpar a multiplicação desse dois números dará\nsempre um par?", "resposta": "sim"},
+            {"Pergunta": "O Teorema de Pitágoras cria uma relação entre geometria básica\ncomo triângulos retângulos com análise estatística?", "resposta": "nao"},
+            {"Pergunta": "A soma de 2 números naturais a e b repectivamente par e ímpar\nsempre será ímpar e igual a um número natural par qualquer\nc mais 1.", "resposta": "sim"},
+            {"Pergunta": "Programas que usam tratamento de imagem para edição entre outras\ncoisas usam muito aplicações diferenciais focando em\nresultados exatos eque modelam fenômenos.", "resposta": "nao"},
+            {"Pergunta": "Problemas numéricos trabalham com aproximações e erros, um\nerro de 1e-20(10^-20) é considerado insignificante na maioria\ndas aplicações numéricas?", "resposta": "sim"},
+            {"Pergunta": "A definição ou a fórmula de Euler é central para a matemática\ne encapsula conceitos extremamente importantes como o\ndesvio padrão, o 0, o 1 e a constante euler.", "resposta": "nao"},
+            {"Pergunta": "Probabilidade e Estatística são bem usadas na previsão de\ncomportamento em áreas variadas, como química, estudo demográfico,\nanálise econômica, engenharia, etc.", "resposta": "sim"},
+            {"Pergunta": "A linearidade de funções facilita o estudo e o processamento\nde resultados, principalmente quando se fala em áreas como\ncalculo numérico e análise de sistemas.", "resposta": "sim"},
+            {"Pergunta": "A trigonometria consegue ter ligação direta com conceitos como\nconjuntos, principalmente quando se fala em reais/complexos,\nindispensáveis na explicação de periodicidade e continuidade.", "resposta": "sim"},
+            {"Pergunta": "Matemática discreta toma um papel extremamente importante no\nentendimento do raciocínio por trás de logaritmos computacionais,\nalém de preparar para matérias como Análise.", "resposta": "nao"},
+            {"Pergunta": "Um limite não retorna um resultado e sim um comportamento, assim\ncomo integrais retornam uma área e uma assinatura.", "resposta": "nao"},
+            {"Pergunta": "Um conjunto contínuo só em um intervalo, sendo diferencial neste\nintervalo, e limitado pode admitir integrais e derivadas?", "resposta": "sim"},
+            {"Pergunta": "Uma boa forma de calcular constantes como a de euler, pi, ou\nfunções como seno e cosseno é com o uso de séries, como a harmônica.", "resposta": "nao"},
+            {"Pergunta": "Convergência e divergência são bem aplicados em séries,\nanalogamente em integrais devido ao sua natureza somatória, a\npartir disso toda integral é convergente?", "resposta": "nao"},
+            {"Pergunta": "A utilização de matrizes é uma maneira eficiente e eficaz\nde resolver muitos problemas numéricos, principalmente com\nsistema lineares.", "resposta": "sim"},
+            {"Pergunta": "Em um grafo completo, todos os vértices estão conectados\npor uma aresta.", "resposta": "nao"},
+            {"Pergunta": "O Teorema dos Primos em Progressões aritméticas assume que\nexistem infinitos números primos na forma 2n+1.", "resposta": "nao"},
+            {"Pergunta": "A ordenação é uma das áreas mais estudadas em questão de\nalgortimos e complexidade, em busca de tornar mais rápido o processo,\nmas o mais rápido possível até hoje é O(nlogn) em casos isolados.", "resposta": "nao"},
+            {"Pergunta": "A indução matemática é um método válido para provar afirmações\nsobre números naturais e inteiros.", "resposta": "nao"}
         ]
         sim = f'Sim'
         nao = f'Não'
